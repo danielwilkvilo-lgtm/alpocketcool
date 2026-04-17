@@ -1,22 +1,93 @@
 <!doctype html>
-<html lang="en">
+<html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <title>Alpocket</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ALPOCKET</title>
+
   <style>
     body {
       margin: 0;
-      background: black;
-      color: white;
+      font-family: Arial, sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+    }
+
+    section {
+      min-height: 100vh;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      font-family: Arial;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .box {
+      max-width: 600px;
+      padding: 24px;
+      background: #141414;
+      border-radius: 14px;
+    }
+
+    h1 {
+      font-size: 44px;
+      margin: 0;
+    }
+
+    p {
+      opacity: 0.75;
+      line-height: 1.6;
+    }
+
+    .cta {
+      margin-top: 20px;
+      padding: 12px 20px;
+      background: white;
+      color: black;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
     }
   </style>
 </head>
+
 <body>
-  <h1>ALPOCKET LIVE ✔</h1>
+
+  <section>
+    <h1>ALPOCKET</h1>
+    <p>Tworzymy cyfrowe doświadczenia, które zostają w pamięci.</p>
+  </section>
+
+  <section>
+    <div class="box">
+      <h2>Co robimy?</h2>
+      <p>
+        Projektujemy proste, szybkie i dostępne przez QR strony,
+        które zamieniają momenty w cyfrowe doświadczenia.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="box">
+      <h2>Zastosowania</h2>
+      <p>
+        • eventy i śluby<br/>
+        • małe biznesy lokalne<br/>
+        • personalne pamiątki<br/>
+        • mikro landing pages
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="box">
+      <h2>Kontakt</h2>
+      <p>Chcesz własne doświadczenie?</p>
+      <button class="cta">Napisz do nas</button>
+    </div>
+  </section>
+
 </body>
 </html>

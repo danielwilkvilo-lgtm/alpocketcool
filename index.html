@@ -1,123 +1,322 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ALPOCKET</title>
+  <title>AlPocket – AI Starter Pack</title>
 
   <style>
-    body {
+    * {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0a0a0a;
-      color: #fff;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    section {
-      min-height: 100vh;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0a0e17 0%, #0f1420 50%, #0a0e17 100%);
+      color: #e6f1ff;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Grid background effect */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(0deg, transparent 24%, rgba(0, 255, 200, 0.05) 25%, rgba(0, 255, 200, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 200, 0.05) 75%, rgba(0, 255, 200, 0.05) 76%, transparent 77%, transparent),
+        linear-gradient(90deg, transparent 24%, rgba(0, 255, 200, 0.05) 25%, rgba(0, 255, 200, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 200, 0.05) 75%, rgba(0, 255, 200, 0.05) 76%, transparent 77%, transparent);
+      background-size: 50px 50px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    header {
+      position: relative;
+      z-index: 2;
+      padding: 20px 0;
+      text-align: center;
+      border-bottom: 1px solid rgba(0, 255, 200, 0.1);
+    }
+
+    header .logo {
+      font-size: 14px;
+      letter-spacing: 3px;
+      font-weight: 600;
+      color: #00ffc3;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    main {
+      position: relative;
+      z-index: 2;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 60px 20px;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      padding: 40px;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .hero {
       text-align: center;
+      margin-bottom: 50px;
     }
 
     h1 {
-      font-size: 42px;
-      margin: 0;
+      font-size: clamp(36px, 8vw, 64px);
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #e6f1ff 0%, #00ffc3 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
-    h2 {
-      margin-bottom: 10px;
-    }
-
-    p {
+    .tagline {
+      font-size: clamp(16px, 4vw, 24px);
+      color: rgba(230, 241, 255, 0.7);
+      margin-bottom: 40px;
       max-width: 600px;
-      opacity: 0.8;
-      line-height: 1.6;
+      line-height: 1.4;
+      font-weight: 300;
     }
 
-    .box {
+    /* Value proposition */
+    .features {
+      background: linear-gradient(135deg, rgba(0, 255, 200, 0.08) 0%, rgba(0, 100, 255, 0.08) 100%);
+      border: 1px solid rgba(0, 255, 200, 0.15);
+      border-radius: 12px;
+      padding: 35px;
+      margin-bottom: 40px;
       max-width: 600px;
-      padding: 24px;
-      background: #141414;
-      border-radius: 14px;
+      backdrop-filter: blur(10px);
     }
 
-    .cta {
-      margin-top: 20px;
-      padding: 14px 26px;
-      background: white;
-      color: black;
-      text-decoration: none;
+    .feature-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+      font-size: clamp(14px, 2.5vw, 16px);
+    }
+
+    .feature-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .feature-icon {
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, #00ffc3 0%, #0064ff 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #0a0e17;
       font-weight: bold;
-      border-radius: 8px;
-      display: inline-block;
+      margin-right: 14px;
+      flex-shrink: 0;
     }
 
-    .small {
+    .feature-text {
+      color: #e6f1ff;
+    }
+
+    /* CTA Section */
+    .cta-section {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      padding: 16px 40px;
+      background: linear-gradient(135deg, #00ffc3 0%, #00d9a3 100%);
+      color: #0a0e17;
+      text-decoration: none;
+      font-weight: 700;
+      border-radius: 8px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 8px 32px rgba(0, 255, 195, 0.2);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 48px rgba(0, 255, 195, 0.3);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      display: inline-block;
+      padding: 14px 32px;
+      background: transparent;
+      color: #00ffc3;
+      text-decoration: none;
+      font-weight: 600;
+      border: 1px solid rgba(0, 255, 200, 0.3);
+      border-radius: 8px;
+      transition: all 0.3s;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .btn-secondary:hover {
+      border-color: rgba(0, 255, 200, 0.6);
+      background: rgba(0, 255, 200, 0.08);
+    }
+
+    /* Trust signals */
+    .trust {
+      display: flex;
+      gap: 30px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+      font-size: 13px;
+      color: rgba(230, 241, 255, 0.6);
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .trust-badge {
+      width: 20px;
+      height: 20px;
+      background: rgba(0, 255, 200, 0.2);
+      border: 1px solid rgba(0, 255, 200, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #00ffc3;
+    }
+
+    /* Footer */
+    footer {
+      position: relative;
+      z-index: 2;
+      padding: 30px 20px;
+      text-align: center;
+      border-top: 1px solid rgba(0, 255, 200, 0.1);
       font-size: 12px;
-      opacity: 0.6;
-      margin-top: 10px;
+      color: rgba(230, 241, 255, 0.4);
+    }
+
+    footer a {
+      color: rgba(0, 255, 200, 0.6);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    footer a:hover {
+      color: #00ffc3;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      main {
+        padding: 40px 16px;
+        min-height: auto;
+      }
+
+      .features {
+        padding: 24px;
+      }
+
+      .trust {
+        gap: 16px;
+        flex-direction: column;
+      }
+
+      h1 {
+        letter-spacing: 0.5px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <!-- HERO -->
-  <section>
-    <h1>ALPOCKET</h1>
-    <p>Cyfrowe doświadczenia zamiast zwykłych stron.</p>
+  <header>
+    <div class="logo">⚡ AlPocket</div>
+  </header>
 
-    <a href="https://wa.me/48690199168" class="cta">
-      Napisz na WhatsApp
-    </a>
+  <main>
+    <section class="hero">
+      <h1>AI Starter Pack</h1>
+      <p class="tagline">Gotowe systemy, prompty i automatyzacje. Zarabiaj, twórz i skaluj bez kodowania.</p>
+    </section>
 
-    <div class="small">
-      lub: alpockedpro@gmail.com
-    </div>
-  </section>
+    <section class="features">
+      <div class="feature-item">
+        <div class="feature-icon">✓</div>
+        <div class="feature-text">Gotowe prompty do natychmiastowego użytku</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">✓</div>
+        <div class="feature-text">Automatyzacje AI do pracy i contentю</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">✓</div>
+        <div class="feature-text">Systemy przychodu bez technicznego setupu</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">✓</div>
+        <div class="feature-text">Wsparcie i aktualizacje co miesiąc</div>
+      </div>
+    </section>
 
-  <!-- VALUE -->
-  <section>
-    <div class="box">
-      <h2>Co robimy?</h2>
-      <p>
-        Tworzymy proste strony dostępne przez QR, które zamieniają momenty,
-        wydarzenia i biznes w cyfrowe doświadczenia.
-      </p>
-    </div>
-  </section>
-
-  <!-- USE CASE -->
-  <section>
-    <div class="box">
-      <h2>Zastosowania</h2>
-      <p>
-        • śluby i eventy<br/>
-        • pamiątki dla gości<br/>
-        • strony dla lokalnych biznesów<br/>
-        • szybkie landing pages
-      </p>
-    </div>
-  </section>
-
-  <!-- OFFER -->
-  <section>
-    <div class="box">
-      <h2>Oferta start</h2>
-      <p>
-        Strona + QR + gotowe w 24h<br/>
-        Prosto. Szybko. Bez zbędnych rzeczy.
-      </p>
-
-      <a href="https://wa.me/48690199168" class="cta">
-        Zamów teraz
+    <section class="cta-section">
+      <a href="https://wa.me/48690199168?text=Cześć!%20Chciałbym%20dowiedzieć%20się%20więcej%20o%20AlPocket" class="btn-primary">
+        🚀 Wejdź do Systemu
       </a>
-    </div>
-  </section>
+      <a href="mailto:alpockedpro@gmail.com?subject=AlPocket%20-%20Zapytanie" class="btn-secondary">
+        Lub wyślij wiadomość
+      </a>
+    </section>
+
+    <section class="trust">
+      <div class="trust-item">
+        <div class="trust-badge">✓</div>
+        <span>Dostęp natychmiast po płatności</span>
+      </div>
+      <div class="trust-item">
+        <div class="trust-badge">✓</div>
+        <span>Gwarancja zwrotu 7 dni</span>
+      </div>
+      <div class="trust-item">
+        <div class="trust-badge">✓</div>
+        <span>1000+ użytkowników</span>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 AlPocket. Wszystkie prawa zastrzeżone. | <a href="mailto:alpockedpro@gmail.com">Kontakt</a></p>
+  </footer>
 
 </body>
 </html>

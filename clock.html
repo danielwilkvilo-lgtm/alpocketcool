@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Global Digital Clock</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background: linear-gradient(135deg, #0a0e17 0%, #0f1420 50%, #0a0e17 100%);
+      color: #e6f1ff;
+      min-height: 100vh;
+      padding: 40px 20px;
+      overflow-x: hidden;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(0deg, transparent 24%, rgba(0, 255, 200, 0.05) 25%, rgba(0, 255, 200, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 200, 0.05) 75%, rgba(0, 255, 200, 0.05) 76%, transparent 77%, transparent),
+        linear-gradient(90deg, transparent 24%, rgba(0, 255, 200, 0.05) 25%, rgba(0, 255, 200, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 200, 0.05) 75%, rgba(0, 255, 200, 0.05) 76%, transparent 77%, transparent);
+      background-size: 50px 50px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    h1 {
+      font-size: clamp(28px, 6vw, 48px);
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #e6f1ff 0%, #00ffc3 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 2px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: rgba(230, 241, 255, 0.6);
+      letter-spacing: 1px;
+    }
+
+    .clocks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .clock-card {
+      background: linear-gradient(135deg, rgba(0, 255, 200, 0.08) 0%, rgba(0, 100, 255, 0.08) 100%);
+      border: 1px solid rgba(0, 255, 200, 0.15);
+      border-radius: 12px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      cursor: default;
+    }
+
+    .clock-card:hover {
+      border-color: rgba(0, 255, 200, 0.3);
+      background: linear-gradient(135deg, rgba(0, 255, 200, 0.12) 0%, rgba(0, 100, 255, 0.12) 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0, 255, 195, 0.15);
+    }
+
+    .timezone-label {
+      font-size: 12px;
+      color: #00ffc3;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .city-name {
+      font-size: 20px;
+      color: #e6f1ff;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .digital-time {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 700;
+      color: #00ffc3;
+      margin-bottom: 12px;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px rgba(0, 255, 195, 0.3);
+    }
+
+    .time-period {
+      font-size: 14px;
+      color: rgba(230, 241, 255, 0.7);
+      margin-bottom: 16px;
+    }
+
+    .date-display {
+      font-size: 12px;
+      color: rgba(230, 241, 255, 0.5);
+      border-top: 1px solid rgba(0, 255, 200, 0.1);
+      padding-top: 12px;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: transparent;
+      color: #00ffc3;
+      border: 1px solid rgba(0, 255, 200, 0.3);
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    button:hover {
+      border-color: rgba(0, 255, 200, 0.6);
+      background: rgba(0, 255, 200, 0.08);
+      transform: translateY(-1px);
+    }
+
+    button.active {
+      background: linear-gradient(135deg, #00ffc3 0%, #00d9a3 100%);
+      color: #0a0e17;
+      border-color: transparent;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: rgba(230, 241, 255, 0.4);
+      border-top: 1px solid rgba(0, 255, 200, 0.1);
+      padding-top: 20px;
+    }
+
+    /* 12/24 hour format toggle */
+    .format-toggle {
+      display: flex;
+      gap: 5px;
+      background: rgba(0, 255, 200, 0.08);
+      border: 1px solid rgba(0, 255, 200, 0.15);
+      border-radius: 6px;
+      padding: 2px;
+      width: fit-content;
+      margin: 0 auto;
+    }
+
+    .format-toggle button {
+      padding: 8px 16px;
+      border: none;
+      background: transparent;
+      color: rgba(230, 241, 255, 0.6);
+      cursor: pointer;
+      transition: all 0.2s;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+
+    .format-toggle button.active {
+      background: rgba(0, 255, 200, 0.2);
+      color: #00ffc3;
+    }
+
+    @media (max-width: 768px) {
+      .clocks-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        margin-bottom: 5px;
+      }
+
+      .digital-time {
+        font-size: 36px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <header>
+      <h1>⏰ Global Clock</h1>
+      <p class="subtitle">Real-time in your timezone</p>
+    </header>
+
+    <div class="controls">
+      <div class="format-toggle">
+        <button class="format-btn active" data-format="12">12 Hour</button>
+        <button class="format-btn" data-format="24">24 Hour</button>
+      </div>
+    </div>
+
+    <div class="clocks-grid" id="clocksGrid">
+      <!-- Clocks will be generated here -->
+    </div>
+
+    <div class="footer">
+      <p>Clock updates every second • Timezone data from Intl API</p>
+    </div>
+  </div>
+
+  <script>
+    // Timezone configurations
+    const timezones = [
+      { timezone: 'America/New_York', city: 'New York', flag: '🗽' },
+      { timezone: 'America/Los_Angeles', city: 'Los Angeles', flag: '🌴' },
+      { timezone: 'America/Chicago', city: 'Chicago', flag: '🏙️' },
+      { timezone: 'Europe/London', city: 'London', flag: '🇬🇧' },
+      { timezone: 'Europe/Paris', city: 'Paris', flag: '🗼' },
+      { timezone: 'Europe/Warsaw', city: 'Warsaw', flag: '🇵🇱' },
+      { timezone: 'Asia/Tokyo', city: 'Tokyo', flag: '🗾' },
+      { timezone: 'Asia/Bangkok', city: 'Bangkok', flag: '🇹🇭' },
+      { timezone: 'Asia/Dubai', city: 'Dubai', flag: '🇦🇪' },
+      { timezone: 'Australia/Sydney', city: 'Sydney', flag: '🦘' },
+      { timezone: 'Pacific/Auckland', city: 'Auckland', flag: '🇳🇿' },
+      { timezone: 'Asia/Singapore', city: 'Singapore', flag: '🇸🇬' }
+    ];
+
+    let is24HourFormat = false;
+
+    // Initialize clocks
+    function initializeClocks() {
+      const grid = document.getElementById('clocksGrid');
+      grid.innerHTML = '';
+
+      timezones.forEach(({ timezone, city, flag }) => {
+        const clockCard = document.createElement('div');
+        clockCard.className = 'clock-card';
+        clockCard.innerHTML = `
+          <div class="timezone-label">${timezone}</div>
+          <div class="city-name">${flag} ${city}</div>
+          <div class="digital-time" data-timezone="${timezone}">--:--:--</div>
+          <div class="time-period" data-period="${timezone}"></div>
+          <div class="date-display" data-date="${timezone}"></div>
+        `;
+        grid.appendChild(clockCard);
+      });
+
+      updateAllClocks();
+    }
+
+    // Update all clocks
+    function updateAllClocks() {
+      timezones.forEach(({ timezone }) => {
+        const timeElement = document.querySelector(`[data-timezone="${timezone}"]`);
+        const periodElement = document.querySelector(`[data-period="${timezone}"]`);
+        const dateElement = document.querySelector(`[data-date="${timezone}"]`);
+
+        const now = new Date();
+        const formatter = new Intl.DateTimeFormat('en-US', {
+          timeZone: timezone,
+          hour: 'numeric',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: !is24HourFormat
+        });
+
+        const parts = formatter.formatToParts(now);
+        let timeString = '';
+        let period = '';
+
+        parts.forEach(part => {
+          if (part.type !== 'literal') {
+            if (part.type === 'dayPeriod') {
+              period = part.value;
+            } else {
+              timeString += part.value;
+            }
+          } else if (timeString.length < 5) {
+            timeString += part.value;
+          } else {
+            timeString += part.value;
+          }
+        });
+
+        // Format time properly
+        const dateObj = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+        const hours = String(dateObj.getHours()).padStart(2, '0');
+        const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+        const seconds = String(dateObj.getSeconds()).padStart(2, '0');
+
+        if (is24HourFormat) {
+          timeElement.textContent = `${hours}:${minutes}:${seconds}`;
+          periodElement.textContent = '';
+        } else {
+          const hour12 = dateObj.getHours() % 12 || 12;
+          const ampm = dateObj.getHours() >= 12 ? 'PM' : 'AM';
+          timeElement.textContent = `${String(hour12).padStart(2, '0')}:${minutes}:${seconds}`;
+          periodElement.textContent = ampm;
+        }
+
+        // Update date
+        const dateFormatter = new Intl.DateTimeFormat('en-US', {
+          timeZone: timezone,
+          weekday: 'short',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+        dateElement.textContent = dateFormatter.format(now);
+      });
+    }
+
+    // Format toggle
+    document.querySelectorAll('.format-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        is24HourFormat = btn.dataset.format === '24';
+        updateAllClocks();
+      });
+    });
+
+    // Initialize and update every second
+    initializeClocks();
+    setInterval(updateAllClocks, 1000);
+  </script>
+
+</body>
+</html>

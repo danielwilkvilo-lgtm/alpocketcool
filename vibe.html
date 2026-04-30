@@ -1,26 +1,24 @@
-   <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ALPOCKET | VIBE</title>
     <style>
-        body { background: #0a0a0a; color: #00ff41; font-family: 'Courier New', monospace; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        header { padding: 20px; border-bottom: 1px solid #00ff41; text-align: center; box-shadow: 0 0 15px rgba(0,255,65,0.2); }
-        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 8px 15px; border-radius: 5px; max-width: 80%; border: 1px solid #00ff41; background: rgba(0,255,65,0.05); }
-        .msg.me { align-self: flex-end; border-color: #00bcff; color: #00bcff; }
-        footer { padding: 20px; display: flex; gap: 10px; background: #000; }
-        input { flex: 1; background: transparent; border: 1px solid #00ff41; color: #fff; padding: 10px; border-radius: 5px; outline: none; }
-        button { background: #00ff41; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 5px; }
-        button:hover { background: #00bcff; }
+        body { background: #0a0a0a; color: #00ff41; font-family: 'Courier New', monospace; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        header { padding: 15px; border-bottom: 1px solid #00ff41; text-align: center; background: #000; }
+        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; background: #050505; }
+        .msg { padding: 10px; border: 1px solid #00ff41; background: rgba(0,255,65,0.1); border-radius: 4px; word-break: break-all; }
+        footer { padding: 20px; display: flex; gap: 10px; background: #000; border-top: 1px solid #333; }
+        input { flex: 1; background: #111; border: 1px solid #00ff41; color: #00ff41; padding: 12px; outline: none; }
+        button { background: #00ff41; color: #000; border: none; padding: 0 25px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
-    <header><h1>SYSTEM VIBE | MATRIX CONNECTED</h1></header>
-    <div id="chat-window"></div>
+    <header><h1>VIBE TERMINAL v1.0</h1></header>
+    <div id="chat-window">Inicjalizacja systemu...</div>
     <footer>
-        <input type="text" id="msgInput" placeholder="Napisz do systemu...">
+        <input type="text" id="msgInput" placeholder="Wpisz polecenie...">
         <button onclick="sendMessage()">SEND</button>
     </footer>
 
@@ -31,24 +29,29 @@
 
         async function fetchMessages() {
             try {
-                const res = await fetch(`${HS}/_matrix/client/r0/rooms/${ROOM}/messages?limit=20`, {
+                const res = await fetch(`${HS}/_matrix/client/r0/rooms/${ROOM}/messages?limit=10`, {
                     headers: { 'Authorization': `Bearer ${TOKEN}` }
                 });
                 const data = await res.json();
                 const chat = document.getElementById('chat-window');
-                chat.innerHTML = '';
-                if (data.chunk) {
+                
+                if (data.chunk && data.chunk.length > 0) {
+                    chat.innerHTML = '';
                     data.chunk.reverse().forEach(msg => {
-                        if(msg.content && msg.content.body) {
+                        if (msg.content && msg.content.body) {
                             const div = document.createElement('div');
                             div.className = 'msg';
-                            div.textContent = `${msg.sender.split(':')[0].substring(1)}: ${msg.content.body}`;
+                            div.textContent = `[${msg.sender.split(':')[0].substring(1)}]: ${msg.content.body}`;
                             chat.appendChild(div);
                         }
                     });
+                } else {
+                    chat.innerHTML = "Brak nowych komunikatów w kanale.";
                 }
                 chat.scrollTop = chat.scrollHeight;
-            } catch (e) { console.error("Błąd połączenia:", e); }
+            } catch (e) {
+                document.getElementById('chat-window').innerHTML = "BŁĄD POŁĄCZENIA Z MATRIXEM.";
+            }
         }
 
         async function sendMessage() {
@@ -56,16 +59,18 @@
             const text = input.value;
             if(!text) return;
             
-            await fetch(`${HS}/_matrix/client/r0/rooms/${ROOM}/send/m.room.message`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ "msgtype": "m.text", "body": text })
-            });
-            input.value = '';
-            setTimeout(fetchMessages, 500);
+            try {
+                await fetch(`${HS}/_matrix/client/r0/rooms/${ROOM}/send/m.room.message`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ "msgtype": "m.text", "body": text })
+                });
+                input.value = '';
+                setTimeout(fetchMessages, 800);
+            } catch (e) { alert("Nie udało się wysłać."); }
         }
 
-        setInterval(fetchMessages, 3000);
+        setInterval(fetchMessages, 5000);
         fetchMessages();
     </script>
 </body>

@@ -20,7 +20,7 @@
     <header><h1>SYSTEM VIBE | MATRIX CONNECTED</h1></header>
     <div id="chat-window"></div>
     <footer>
-        <input type="text" id="msgInput" placeholder="Napisz do sytemu...">
+        <input type="text" id="msgInput" placeholder="Napisz do systemu...">
         <button onclick="sendMessage()">SEND</button>
     </footer>
 
@@ -37,14 +37,16 @@
                 const data = await res.json();
                 const chat = document.getElementById('chat-window');
                 chat.innerHTML = '';
-                data.chunk.reverse().forEach(msg => {
-                    if(msg.content.body) {
-                        const div = document.createElement('div');
-                        div.className = 'msg';
-                        div.textContent = `${msg.sender.split(':')[0].substring(1)}: ${msg.content.body}`;
-                        chat.appendChild(div);
-                    }
-                });
+                if (data.chunk) {
+                    data.chunk.reverse().forEach(msg => {
+                        if(msg.content && msg.content.body) {
+                            const div = document.createElement('div');
+                            div.className = 'msg';
+                            div.textContent = `${msg.sender.split(':')[0].substring(1)}: ${msg.content.body}`;
+                            chat.appendChild(div);
+                        }
+                    });
+                }
                 chat.scrollTop = chat.scrollHeight;
             } catch (e) { console.error("Błąd połączenia:", e); }
         }
@@ -60,7 +62,7 @@
                 body: JSON.stringify({ "msgtype": "m.text", "body": text })
             });
             input.value = '';
-            fetchMessages();
+            setTimeout(fetchMessages, 500);
         }
 
         setInterval(fetchMessages, 3000);

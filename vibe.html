@@ -3,69 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALPOCKET | VIBE FINAL</title>
+    <title>ALPOCKET | COMMAND CENTER</title>
     <style>
-        body { background: #0a0a0a; color: #00ff41; font-family: 'Courier New', monospace; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        header { padding: 10px; border-bottom: 2px solid #00ff41; text-align: center; background: #000; box-shadow: 0 0 15px rgba(0,255,65,0.3); }
-        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 8px; background: #050505; }
-        .msg { padding: 8px 12px; border: 1px solid #00ff41; background: rgba(0,255,65,0.05); border-radius: 4px; font-size: 14px; line-height: 1.4; }
-        .time { color: #888; font-size: 0.8em; margin-right: 10px; }
-        footer { padding: 15px; display: flex; gap: 10px; background: #000; border-top: 1px solid #333; }
-        input { flex: 1; background: #111; border: 1px solid #00ff41; color: #00ff41; padding: 12px; outline: none; font-family: inherit; }
-        .btn { padding: 10px 20px; cursor: pointer; font-weight: bold; font-family: inherit; border: 1px solid #00ff41; transition: 0.2s; }
-        .send-btn { background: #00ff41; color: #000; }
-        .clear-btn { background: transparent; color: #ff4141; border-color: #ff4141; }
-        .btn:hover { opacity: 0.8; transform: scale(1.02); }
+        :root { --neon: #00ff41; --bg: #0a0a0a; --panel: #111; --side-width: 250px; --font-size: 13px; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        header { padding: 5px 10px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; background: #000; }
+        header h1 { font-size: 18px; margin: 0; }
+
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        
+        .side-panel { width: var(--side-width); background: var(--panel); border: 1px solid #333; padding: 15px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; transition: width 0.2s; }
+        
+        /* Ustawienia */
+        .settings-box { font-size: 11px; border: 1px dashed var(--neon); padding: 10px; margin-bottom: 10px; background: rgba(0,255,65,0.05); }
+        .settings-box input { width: 100%; margin-top: 5px; }
+
+        .terminal-container { flex: 1; display: flex; flex-direction: column; background: #050505; border-left: 1px solid var(--neon); border-right: 1px solid var(--neon); }
+        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 8px; font-size: var(--font-size); }
+        
+        .link-btn { display: block; padding: 6px; border: 1px solid #444; color: #aaa; text-decoration: none; font-size: 12px; margin-bottom: 4px; }
+        .link-btn:hover { border-color: var(--neon); color: var(--neon); }
+
+        footer { padding: 10px; display: flex; gap: 10px; background: #000; border-top: 1px solid #333; }
+        input[type="text"] { flex: 1; background: #111; border: 1px solid var(--neon); color: var(--neon); padding: 10px; outline: none; }
+        
+        .btn { padding: 8px 15px; cursor: pointer; border: 1px solid var(--neon); background: var(--neon); color: #000; font-weight: bold; }
+        .btn-mini { background: #333; color: #fff; border-color: #555; font-size: 10px; }
+
+        /* Tryb Mini */
+        body.mini-mode .side-panel { display: none; }
+        body.mini-mode header { display: none; }
+        body.mini-mode footer { padding: 5px; }
     </style>
 </head>
-<body>
-    <header><h1>SYSTEM VIBE v1.1 | STATUS: ULTIMATE</h1></header>
-    <div id="chat-window">TERMINAL GOTOWY. WPISZ POLECENIE...</div>
-    <footer>
-        <button class="btn clear-btn" onclick="clearLogs()">CLR</button>
-        <input type="text" id="msgInput" placeholder="Napisz coś..." onkeypress="if(event.key==='Enter') sendMessage()">
-        <button class="btn send-btn" onclick="sendMessage()">SEND</button>
-    </footer>
+<body id="mainBody">
+    <header>
+        <h1>VIBE HUB v1.3</h1>
+        <div>
+            <button class="btn btn-mini" onclick="toggleMini()">TRYB MINI (ON/OFF)</button>
+        </div>
+    </header>
+    
+    <div class="main-container">
+        <div class="side-panel" id="leftPanel">
+            <div class="settings-box">
+                Szerokość paneli: <br>
+                <input type="range" min="150" max="400" value="250" oninput="updateWidth(this.value)">
+                Rozmiar tekstu: <br>
+                <input type="range" min="10" max="24" value="13" oninput="updateFont(this.value)">
+            </div>
+            <h3>Narzędzia</h3>
+            <a href="https://google.com" target="_blank" class="link-btn">🌐 Google</a>
+            <a href="https://gmail.com" target="_blank" class="link-btn">📧 Gmail</a>
+            <a href="https://chatgpt.com" target="_blank" class="link-btn">🤖 ChatGPT</a>
+        </div>
+
+        <div class="terminal-container">
+            <div id="chat-window">Wczytywanie...</div>
+            <footer>
+                <input type="text" id="msgInput" placeholder="Notatka..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button class="btn" onclick="sendMessage()">SEND</button>
+            </footer>
+        </div>
+
+        <div class="side-panel" id="rightPanel">
+            <h3>Projekty</h3>
+            <a href="#" class="link-btn">🧹 SprzątApka</a>
+            <a href="#" class="link-btn">🏗️ CreatoryStudy</a>
+            <a href="#" class="link-btn">🖨️ Drukarnia</a>
+        </div>
+    </div>
 
     <script>
         let messages = JSON.parse(localStorage.getItem('vibe_msgs') || '[]');
+        
+        // Funkcje ustawień
+        function updateWidth(v) {
+            document.documentElement.style.setProperty('--side-width', v + 'px');
+            localStorage.setItem('vibe_width', v);
+        }
+        function updateFont(v) {
+            document.documentElement.style.setProperty('--font-size', v + 'px');
+            localStorage.setItem('vibe_font', v);
+        }
+        function toggleMini() {
+            document.getElementById('mainBody').classList.toggle('mini-mode');
+        }
+
+        // Ładowanie zapisanych ustawień
+        if(localStorage.getItem('vibe_width')) updateWidth(localStorage.getItem('vibe_width'));
+        if(localStorage.getItem('vibe_font')) updateFont(localStorage.getItem('vibe_font'));
 
         function render() {
             const win = document.getElementById('chat-window');
             win.innerHTML = '';
-            if (messages.length === 0) {
-                win.innerHTML = '<div style="color:#555">Brak logów w pamięci.</div>';
-            } else {
-                messages.forEach(m => {
-                    const div = document.createElement('div');
-                    div.className = 'msg';
-                    div.innerHTML = `<span class="time">${m.t}</span><b>[OPERATOR]:</b> ${m.text}`;
-                    win.appendChild(div);
-                });
-            }
+            messages.forEach(m => {
+                const div = document.createElement('div');
+                div.style.borderBottom = "1px solid #222";
+                div.style.padding = "5px 0";
+                div.innerHTML = `<span style="color:#555; margin-right:10px">${m.t}</span> ${m.text}`;
+                win.appendChild(div);
+            });
             win.scrollTop = win.scrollHeight;
-            document.getElementById('msgInput').focus(); // Kursor zawsze gotowy do pisania
         }
 
         function sendMessage() {
             const input = document.getElementById('msgInput');
             if(!input.value.trim()) return;
-            
             const now = new Date();
             const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-            
             messages.push({ text: input.value, t: timeStr });
             localStorage.setItem('vibe_msgs', JSON.stringify(messages));
             input.value = '';
             render();
-        }
-
-        function clearLogs() {
-            if(confirm("Wyczyścić wszystkie logi?")) {
-                messages = [];
-                localStorage.removeItem('vibe_msgs');
-                render();
-            }
         }
 
         render();

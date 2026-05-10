@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>SprzątApka</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════
+   TOKENS
+══════════════════════════════════════ */
+:root {
+  --bg:#0d0d18; --bg2:#131320; --bg3:#1a1a2e;
+  --card:#181828; --card2:#1f1f35;
+  --indigo:#4f4ecb; --indigo2:#6362d8; --indigo3:#3d3ca8;
+  --indigo-gl:rgba(79,78,203,0.18);
+  --rose:#e8a0b0; --rose2:#f0b8c5; --rose3:#d4788e;
+  --rose-gl:rgba(232,160,176,0.15); --rose-gl2:rgba(232,160,176,0.08);
+  --green:#5ecea0; --amber:#f0b858; --red:#e87070;
+  --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.13);
+  --t1:#f0eef8; --t2:#9896b8; --t3:#5a5878;
+  --r:16px; --r2:12px;
+}
+
+/* ══════════════════════════════════════
+   RESET
+══════════════════════════════════════ */
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+html,body { height:100%; overflow:hidden; }
+body { background:var(--bg); color:var(--t1); font-family:'Sora',sans-serif; -webkit-font-smoothing:antialiased; }
+button { font-family:'Sora',sans-serif; cursor:pointer; }
+input,select,textarea { font-family:'Sora',sans-serif; }
+select option { background:#1a1a2e; }
+
+/* ══════════════════════════════════════
+   ROOT LAYOUT
+   .app → flex column, full screen
+   .view-area → flex:1, clips all views/subviews/modals
+   .bnav → fixed height at bottom, never overlapped
+══════════════════════════════════════ */
+.app {
+  max-width: 430px;
+  height: 100dvh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  overflow: hidden;
+  position: relative;
+}
+.view-area {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ══════════════════════════════════════
+   VIEWS  (fill view-area, stacked)
+══════════════════════════════════════ */
+.view {
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+.view.active { display: flex; }
+
+/* ══════════════════════════════════════
+   SUBVIEWS  (slide in from right)
+══════════════════════════════════════ */
+.subview {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background: var(--bg);
+  transform: translateX(100%);
+  transition: transform .28s cubic-bezier(.32,0,.12,1);
+  overflow: hidden;
+  pointer-events: none;
+}
+.subview.open {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* ══════════════════════════════════════
+   MODALS  (bottom sheet)
+══════════════════════════════════════ */
+.modal-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0,0,0,0.65);
+  align-items: flex-end;
+}
+.modal-overlay.open { display: flex; }
+.modal-sheet {
+  background: var(--bg3);
+  border-radius: 24px 24px 0 0;
+  width: 100%;
+  max-height: 90%;
+  overflow-y: auto;
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+  animation: sheetUp .26s cubic-bezier(.32,0,.12,1);
+}
+@keyframes sheetUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+.modal-hd {
+  padding: 20px 20px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg3);
+  z-index: 1;
+}
+.modal-title { font-family:'Playfair Display',serif; font-size:18px; }
+.modal-close {
+  background: var(--card2);
+  border: 1px solid var(--border2);
+  color: var(--t2);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+}
+.modal-close:active { background: var(--card); }
+
+/* ══════════════════════════════════════
+   BOTTOM NAV
+══════════════════════════════════════ */
+.bnav {
+  height: 64px;
+  flex-shrink: 0;
+  display: flex;
+  background: rgba(10,10,22,.98);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.ni {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  padding: 8px 0;
+  position: relative;
+  transition: opacity .15s;
+}
+.ni svg { width:22px; height:22px; color:var(--t3); transition:color .18s; }
+.ni .nl { font-size:9px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:var(--t3); transition:color .18s; }
+.ni.on svg { color:var(--rose); filter:drop-shadow(0 0 5px rgba(232,160,176,.45)); }
+.ni.on .nl { color:var(--rose); }
+.ni.on::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 32px; height: 2px;
+  background: var(--rose);
+  border-radius: 0 0 4px 4px;
+}
+.ni:active { opacity: .7; }
+
+/* ══════════════════════════════════════
+   HEADERS
+══════════════════════════════════════ */
+.hdr {
+  flex-shrink: 0;
+  padding: 52px 20px 20px;
+  background: linear-gradient(155deg, #1f1d48 0%, #181630 55%, var(--bg3) 100%);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.hdr::after {
+  content: '';
+  position: absolute;
+  top: -50px; right: -50px;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(232,160,176,.09) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+.hdr-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+.hdr-logo { display:flex; align-items:center; gap:10px; }
+.hdr-logo svg { width:30px; height:30px; flex-shrink:0; }
+.hdr-brand { display:flex; flex-direction:column; line-height:1.2; }
+.hdr-brand-name { font-family:'Playfair Display',serif; font-size:17px; color:var(--t1); }
+.hdr-brand-sub { font-size:10px; color:var(--rose); text-transform:uppercase; letter-spacing:1px; font-weight:600; }
+.hdr-btn {
+  background: var(--rose-gl);
+  border: 1px solid rgba(232,160,176,.28);
+  color: var(--rose2);
+  border-radius: 10px;
+  padding: 9px 15px;
+  font-size:13px;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+  transition: background .18s;
+}
+.hdr-btn:active { background: rgba(232,160,176,.28); }
+.hdr-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 23px;
+  color: var(--t1);
+  margin-top: 14px;
+  position: relative;
+  z-index: 1;
+}
+.hdr-sub {
+  font-size: 12px;
+  color: var(--t2);
+  margin-top: 3px;
+  position: relative;
+  z-index: 1;
+}
+
+/* SUB-HEADER (inside subviews) */
+.sub-hdr {
+  flex-shrink: 0;
+  padding: 52px 20px 20px;
+  background: linear-gradient(155deg, #1f1d48 0%, #181630 55%, var(--bg3) 100%);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.sub-hdr::after {
+  content: '';
+  position: absolute;
+  top: -50px; right: -50px;
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(232,160,176,.09) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--t2);
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  padding: 4px 0;
+  position: relative;
+  z-index: 1;
+  transition: color .15s;
+}
+.back-btn:active { color: var(--t1); }
+.sub-chip {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--rose);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  margin-bottom: 6px;
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+.sub-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  color: var(--t1);
+  position: relative;
+  z-index: 1;
+}
+.sub-sub {
+  font-size: 12px;
+  color: var(--t2);
+  margin-top: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ══════════════════════════════════════
+   SCROLL AREA
+══════════════════════════════════════ */
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 16px;
+}
+.scroll::-webkit-scrollbar { display: none; }
+
+/* ══════════════════════════════════════
+   DATE STRIP
+══════════════════════════════════════ */
+.date-strip {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+  background: var(--bg3);
+}
+.date-strip::-webkit-scrollbar { display: none; }
+.dp {
+  min-width: 48px;
+  height: 62px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all .18s;
+  user-select: none;
+}
+.dp.on {
+  background: var(--indigo);
+  border-color: var(--indigo2);
+  box-shadow: 0 4px 16px rgba(79,78,203,.4);
+}
+.dp .dw { font-size:9px; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:.5px; }
+.dp .dd { font-size:18px; font-weight:700; color:var(--t1); }
+.dp .dot { width:4px; height:4px; border-radius:50%; background:var(--rose); margin-top:1px; }
+.dp.on .dw, .dp.on .dd { color:#fff; }
+.dp.on .dot { background:rgba(255,255,255,.6); }
+
+/* ══════════════════════════════════════
+   SECTION LABEL
+══════════════════════════════════════ */
+.slbl {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.3px;
+  color: var(--t3);
+  padding: 14px 16px 6px;
+}
+
+/* ══════════════════════════════════════
+   ORDER CARDS
+══════════════════════════════════════ */
+.olist { padding: 0 12px; display: flex; flex-direction: column; gap: 9px; }
+.oc {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 12px 14px 0;
+  display: flex;
+  cursor: pointer;
+  transition: transform .15s, background .15s;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+.oc:active { transform: scale(.98); background: var(--card2); }
+.oc-bar { width:3px; border-radius:0 3px 3px 0; margin-right:12px; flex-shrink:0; align-self:stretch; }
+.oc.pl .oc-bar { background:var(--t3); }
+.oc.co .oc-bar { background:var(--indigo2); }
+.oc.ip .oc-bar { background:var(--amber); }
+.oc.dn .oc-bar { background:var(--green); }
+.oc-time { min-width:46px; flex-shrink:0; display:flex; flex-direction:column; align-items:center; padding-top:2px; margin-right:4px; }
+.oc-time .t { font-size:13px; font-weight:700; line-height:1; }
+.oc-time .te { font-size:10px; color:var(--t3); margin-top:2px; }
+.oc-body { flex:1; min-width:0; }
+.oc-client { font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.oc-desc { font-size:12px; color:var(--t2); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.oc-meta { display:flex; gap:5px; margin-top:7px; flex-wrap:wrap; align-items:center; }
+.oc-arr { color:var(--t3); font-size:18px; align-self:center; margin-left:6px; flex-shrink:0; }
+
+/* ══════════════════════════════════════
+   BADGES
+══════════════════════════════════════ */
+.badge { font-size:9px; font-weight:800; padding:3px 8px; border-radius:20px; letter-spacing:.4px; text-transform:uppercase; }
+.badge.pl { background:rgba(90,88,120,.3); color:var(--t2); }
+.badge.co { background:var(--indigo-gl); color:#a0a0ff; }
+.badge.ip { background:rgba(240,184,88,.18); color:var(--amber); }
+.badge.dn { background:rgba(94,206,160,.15); color:var(--green); }
+.badge.rose { background:var(--rose-gl); color:var(--rose2); }
+
+/* ══════════════════════════════════════
+   EMPTY STATE
+══════════════════════════════════════ */
+.empty { text-align:center; padding:48px 20px; }
+.empty .ei { font-size:44px; margin-bottom:10px; }
+.empty .et { font-size:14px; color:var(--t2); line-height:1.5; }
+.empty .ea {
+  margin-top:16px;
+  display:inline-block;
+  background:var(--rose-gl);
+  border:1px solid rgba(232,160,176,.25);
+  color:var(--rose2);
+  border-radius:10px;
+  padding:10px 18px;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+/* ══════════════════════════════════════
+   INFO CARDS
+══════════════════════════════════════ */
+.icard { background:var(--card); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; margin:0 12px; }
+.icard + .icard { margin-top:10px; }
+.icard-hd {
+  padding:12px 15px;
+  font-size:10px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:var(--t3);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.icard-edit { font-size:12px; color:var(--rose); cursor:pointer; font-weight:600; text-transform:none; letter-spacing:0; }
+.irow { display:flex; justify-content:space-between; align-items:center; padding:11px 15px; border-bottom:1px solid var(--border); gap:10px; }
+.irow:last-child { border-bottom:none; }
+.irow.tap { cursor:pointer; transition:background .15s; }
+.irow.tap:active { background:var(--card2); }
+.ik { font-size:12px; color:var(--t2); flex-shrink:0; }
+.iv { font-size:13px; color:var(--t1); font-weight:500; text-align:right; word-break:break-word; }
+.iv.code { background:var(--indigo-gl); color:#a0a0ff; padding:3px 10px; border-radius:8px; font-family:monospace; font-size:16px; font-weight:700; letter-spacing:2px; }
+.iv.rose { color:var(--rose); }
+.iv.blue { color:#60a5fa; }
+
+/* ══════════════════════════════════════
+   STATUS SELECTOR
+══════════════════════════════════════ */
+.status-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:8px;
+  padding:14px; margin:0 12px;
+  background:var(--card); border:1px solid var(--border); border-radius:var(--r);
+}
+.sg-lbl { grid-column:1/-1; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--t3); margin-bottom:2px; }
+.sbtn {
+  padding:13px 6px; border-radius:var(--r2); border:2px solid var(--border);
+  background:var(--bg3); color:var(--t2); font-size:10px; font-weight:800;
+  text-align:center; cursor:pointer; text-transform:uppercase; letter-spacing:.4px;
+  transition:all .16s; user-select:none;
+}
+.sbtn .si { font-size:20px; display:block; margin-bottom:4px; }
+.sbtn:active { transform:scale(.96); }
+.sbtn.a-pl { background:rgba(90,88,120,.2); border-color:var(--t3); color:var(--t1); }
+.sbtn.a-co { background:var(--indigo-gl); border-color:var(--indigo2); color:#a0a0ff; }
+.sbtn.a-ip { background:rgba(240,184,88,.15); border-color:var(--amber); color:var(--amber); }
+.sbtn.a-dn { background:rgba(94,206,160,.12); border-color:var(--green); color:var(--green); }
+
+/* ══════════════════════════════════════
+   BIG BUTTONS
+══════════════════════════════════════ */
+.bigbtn {
+  margin:0 12px; width:calc(100% - 24px);
+  padding:17px; border-radius:var(--r);
+  font-size:14px; font-weight:700;
+  border:none; display:flex; align-items:center; justify-content:center; gap:10px;
+  transition:all .18s; letter-spacing:.3px; user-select:none;
+}
+.bigbtn:active { transform:scale(.97); }
+.bigbtn.indigo { background:linear-gradient(135deg,var(--indigo3),var(--indigo2)); color:#fff; box-shadow:0 6px 20px rgba(79,78,203,.35); }
+.bigbtn.rose-btn { background:linear-gradient(135deg,#c46880,var(--rose)); color:#fff; box-shadow:0 6px 20px rgba(232,160,176,.3); }
+.bigbtn.ghost { background:var(--card); border:1px solid var(--border2); color:var(--t2); opacity:.6; pointer-events:none; }
+.bigbtn.danger { background:rgba(232,112,112,.12); border:1px solid rgba(232,112,112,.25); color:var(--red); }
+
+/* ══════════════════════════════════════
+   PHOTO SECTION
+══════════════════════════════════════ */
+.photo-card { margin:0 12px; background:var(--card); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; }
+.photo-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border); }
+.pb {
+  background:var(--bg3); padding:16px 10px;
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  cursor:pointer; min-height:84px; justify-content:center; transition:background .15s;
+  user-select:none;
+}
+.pb:active { background:var(--card2); }
+.pb .pi { font-size:24px; line-height:1; }
+.pb .pl { font-size:12px; font-weight:700; color:var(--t1); }
+.pb .pc { font-size:10px; color:var(--t3); }
+.pb.has-rose { background:rgba(232,160,176,.06); }
+.pb.has-rose .pl { color:var(--rose2); }
+.thumbs { padding:10px; display:flex; gap:7px; overflow-x:auto; scrollbar-width:none; }
+.thumbs::-webkit-scrollbar { display:none; }
+.thumb {
+  width:62px; height:62px; border-radius:10px; background:var(--bg3);
+  border:1px solid var(--border); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:22px;
+  position:relative; overflow:hidden;
+}
+.thumb .tl { position:absolute; bottom:0; left:0; right:0; text-align:center; font-size:7px; font-weight:800; text-transform:uppercase; background:rgba(0,0,0,.6); color:rgba(255,255,255,.8); padding:2px; }
+.thumb.add { border:2px dashed var(--t3); color:var(--t3); font-size:20px; }
+
+/* ══════════════════════════════════════
+   MAP BUTTON
+══════════════════════════════════════ */
+.map-btn {
+  display:flex; align-items:center; gap:10px;
+  background:rgba(96,165,250,.1); border:1px solid rgba(96,165,250,.2);
+  border-radius:var(--r2); padding:13px 14px;
+  cursor:pointer; margin:0 12px; text-decoration:none;
+  transition:background .15s;
+}
+.map-btn:active { background:rgba(96,165,250,.18); }
+.map-ico { font-size:20px; flex-shrink:0; }
+.map-txt .mt1 { font-size:13px; font-weight:600; color:#93c5fd; }
+.map-txt .mt2 { font-size:11px; color:var(--t2); margin-top:1px; }
+.map-arr { color:#60a5fa; font-size:15px; margin-left:auto; }
+
+/* ══════════════════════════════════════
+   CLIENT CARDS
+══════════════════════════════════════ */
+.clist { padding:0 12px; display:flex; flex-direction:column; gap:9px; }
+.cc {
+  background:var(--card); border:1px solid var(--border); border-radius:var(--r);
+  padding:13px; display:flex; align-items:center; gap:12px;
+  cursor:pointer; transition:transform .15s, background .15s;
+  user-select:none;
+}
+.cc:active { transform:scale(.98); background:var(--card2); }
+.cc-av {
+  width:44px; height:44px; border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Playfair Display',serif; font-size:16px; font-weight:600;
+  color:#fff; flex-shrink:0;
+}
+.cc-av.ind { background:linear-gradient(135deg,var(--indigo3),var(--indigo2)); }
+.cc-av.ros { background:linear-gradient(135deg,#c46880,var(--rose)); }
+.cc-info { flex:1; min-width:0; }
+.cc-name { font-size:14px; font-weight:600; }
+.cc-addr { font-size:12px; color:var(--t2); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cc-tags { display:flex; gap:5px; margin-top:5px; flex-wrap:wrap; }
+.tag { font-size:9px; font-weight:800; padding:2px 7px; border-radius:20px; text-transform:uppercase; letter-spacing:.4px; }
+.tag.rose { background:var(--rose-gl); color:var(--rose2); }
+.tag.blue { background:var(--indigo-gl); color:#a0a0ff; }
+.tag.green { background:rgba(94,206,160,.12); color:var(--green); }
+
+/* ══════════════════════════════════════
+   SEARCH
+══════════════════════════════════════ */
+.search-wrap { padding:0 12px 12px; background:linear-gradient(to bottom,var(--bg3),var(--bg2)); flex-shrink:0; }
+.search-inner { position:relative; }
+.search-ico { position:absolute; left:13px; top:50%; transform:translateY(-50%); font-size:14px; pointer-events:none; }
+.search-input {
+  width:100%; background:rgba(255,255,255,.06); border:1px solid var(--border2);
+  border-radius:var(--r2); padding:12px 12px 12px 38px;
+  color:var(--t1); font-size:14px; outline:none;
+}
+.search-input::placeholder { color:var(--t3); }
+.search-input:focus { border-color:rgba(232,160,176,.4); }
+
+/* ══════════════════════════════════════
+   TEAM
+══════════════════════════════════════ */
+.team-list { padding:0 12px; display:flex; flex-direction:column; gap:9px; }
+.tc { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:14px; display:flex; align-items:center; gap:12px; }
+.tc-av { width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:17px; color:#fff; flex-shrink:0; }
+.tc-info { flex:1; }
+.tc-name { font-size:14px; font-weight:600; }
+.tc-role { font-size:12px; color:var(--t2); margin-top:1px; }
+.tc-meta { display:flex; gap:6px; margin-top:5px; align-items:center; }
+.online-dot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 5px rgba(94,206,160,.5); }
+
+/* ══════════════════════════════════════
+   STATS
+══════════════════════════════════════ */
+.stats-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; padding:0 12px; }
+.stat { background:var(--card); border:1px solid var(--border); border-radius:var(--r2); padding:14px 8px; text-align:center; }
+.stat-num { font-size:24px; font-weight:700; font-family:'Playfair Display',serif; color:var(--t1); }
+.stat-lbl { font-size:9px; color:var(--t3); text-transform:uppercase; letter-spacing:.5px; font-weight:700; margin-top:3px; }
+.stat.rs .stat-num { color:var(--rose); }
+.stat.gn .stat-num { color:var(--green); }
+
+/* ══════════════════════════════════════
+   OFFICE GRID
+══════════════════════════════════════ */
+.office-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; padding:0 12px; }
+.og { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:16px 13px; display:flex; flex-direction:column; gap:7px; cursor:pointer; transition:all .16s; }
+.og.full { grid-column:1/-1; flex-direction:row; align-items:center; gap:14px; }
+.og:active { transform:scale(.97); }
+.og-ico { font-size:24px; line-height:1; }
+.og-name { font-size:13px; font-weight:700; color:var(--t1); }
+.og-desc { font-size:11px; color:var(--t2); line-height:1.4; }
+.og.sos-t { background:linear-gradient(135deg,rgba(232,112,112,.16),rgba(180,60,60,.1)); border-color:rgba(232,112,112,.22); }
+.og.rose-t { background:var(--rose-gl2); border-color:rgba(232,160,176,.18); }
+.og.ind-t { background:var(--indigo-gl); border-color:rgba(79,78,203,.22); }
+
+/* ══════════════════════════════════════
+   SOS PULSE
+══════════════════════════════════════ */
+.sos-pulse {
+  width:46px; height:46px; border-radius:50%;
+  background:linear-gradient(135deg,#b91c1c,#ef4444);
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; border:none; flex-shrink:0;
+  animation:sosring 2.2s infinite;
+  transition:transform .15s;
+}
+.sos-pulse:active { transform:scale(.88); }
+@keyframes sosring {
+  0%,100% { box-shadow:0 0 0 0 rgba(239,68,68,.45); }
+  50%      { box-shadow:0 0 0 14px rgba(239,68,68,0); }
+}
+
+/* ══════════════════════════════════════
+   NOTES
+══════════════════════════════════════ */
+.note-item { background:var(--card); border:1px solid var(--border); border-radius:var(--r2); padding:13px 14px; margin:0 12px; cursor:pointer; transition:background .15s; }
+.note-item + .note-item { margin-top:8px; }
+.note-item:active { background:var(--card2); }
+.note-t { font-size:13px; font-weight:600; }
+.note-b { font-size:12px; color:var(--t2); margin-top:3px; line-height:1.5; }
+.note-d { font-size:10px; color:var(--t3); margin-top:5px; }
+
+/* ══════════════════════════════════════
+   FORMS
+══════════════════════════════════════ */
+.form-body { padding:16px 20px 8px; display:flex; flex-direction:column; gap:14px; }
+.field { display:flex; flex-direction:column; gap:6px; }
+.field label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--t3); }
+.field input, .field select, .field textarea {
+  background:var(--card); border:1px solid var(--border2); border-radius:var(--r2);
+  padding:13px 14px; color:var(--t1); font-size:14px;
+  outline:none; width:100%; transition:border-color .2s;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color:var(--rose); }
+.field textarea { resize:none; min-height:72px; line-height:1.5; }
+.field input::placeholder, .field textarea::placeholder { color:var(--t3); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.form-actions { padding:12px 20px 20px; display:flex; flex-direction:column; gap:8px; }
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+.toast {
+  position:absolute; bottom:14px; left:50%;
+  transform:translateX(-50%) translateY(12px);
+  background:var(--card2); border:1px solid var(--border2);
+  border-radius:12px; padding:11px 20px;
+  font-size:13px; font-weight:600; color:var(--t1);
+  z-index:999; opacity:0; transition:opacity .25s, transform .25s;
+  white-space:nowrap; pointer-events:none;
+  max-width:calc(100% - 32px);
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.success { border-color:rgba(94,206,160,.4); color:var(--green); }
+.toast.error { border-color:rgba(232,112,112,.4); color:var(--red); }
+
+/* ══════════════════════════════════════
+   DELETE ROW
+══════════════════════════════════════ */
+.delete-row { padding:6px 12px 4px; display:flex; justify-content:center; }
+.del-btn { background:none; border:none; color:var(--t3); font-size:12px; font-weight:600; cursor:pointer; padding:8px 16px; transition:color .15s; }
+.del-btn:active { color:var(--red); }
+
+/* UTILITY */
+.gap { height:10px; }
+.gap2 { height:16px; }
+.mt0 { margin:0; }
+
+/* ANIMATIONS */
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+.view.active > * { animation:fadeUp .22s ease both; }
+.view.active > *:nth-child(1){animation-delay:.00s}
+.view.active > *:nth-child(2){animation-delay:.04s}
+.view.active > *:nth-child(3){animation-delay:.07s}
+.view.active > *:nth-child(4){animation-delay:.10s}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="view-area" id="view-area">
+
+<!-- ══════════════════════════════════════
+     VIEW: HARMONOGRAM
+══════════════════════════════════════ -->
+<div class="view active" id="v-sched">
+  <div class="hdr">
+    <div class="hdr-row">
+      <div class="hdr-logo">
+        <svg viewBox="0 0 40 44" fill="none"><path d="M5 22 L20 8 L35 22" stroke="#d4a832" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 20 L9 37 L31 37 L31 20" stroke="#d4a832" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="15" y="27" width="10" height="10" rx="2" stroke="#d4a832" stroke-width="1.8"/><path d="M28 14 C35 9,41 15,36 22 C33 17,30 15,28 14Z" fill="#c8a028" opacity=".95"/><path d="M28 14 C31 17,33 20,36 22" stroke="#d4a832" stroke-width="1.1" stroke-linecap="round"/></svg>
+        <div class="hdr-brand"><span class="hdr-brand-name">SprzątApka</span><span class="hdr-brand-sub">Luiza Niedźwiecka</span></div>
+      </div>
+      <button class="hdr-btn" onclick="openModal('modal-order')">＋ Zlecenie</button>
+    </div>
+    <div class="hdr-title">Harmonogram</div>
+    <div class="hdr-sub" id="sched-sub">Ładowanie…</div>
+  </div>
+  <div class="date-strip" id="date-strip"></div>
+  <div class="scroll">
+    <div class="slbl" id="sched-lbl">Dziś</div>
+    <div class="olist" id="order-list"></div>
+    <div class="gap2"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     VIEW: KLIENCI
+══════════════════════════════════════ -->
+<div class="view" id="v-clients">
+  <div class="hdr">
+    <div class="hdr-row">
+      <div class="hdr-logo">
+        <svg viewBox="0 0 40 44" fill="none"><path d="M5 22 L20 8 L35 22" stroke="#d4a832" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 20 L9 37 L31 37 L31 20" stroke="#d4a832" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="15" y="27" width="10" height="10" rx="2" stroke="#d4a832" stroke-width="1.8"/><path d="M28 14 C35 9,41 15,36 22 C33 17,30 15,28 14Z" fill="#c8a028" opacity=".95"/></svg>
+        <div class="hdr-brand"><span class="hdr-brand-name">Klienci</span><span class="hdr-brand-sub" id="clients-count">0 aktywnych</span></div>
+      </div>
+      <button class="hdr-btn" onclick="openModal('modal-client')">＋ Dodaj</button>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <div class="search-inner">
+      <span class="search-ico">🔍</span>
+      <input class="search-input" type="search" placeholder="Szukaj po nazwie lub adresie…" id="client-search" oninput="renderClients()">
+    </div>
+  </div>
+  <div class="scroll">
+    <div class="slbl">Wszyscy klienci</div>
+    <div class="clist" id="client-list"></div>
+    <div class="gap2"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     VIEW: ZESPÓŁ
+══════════════════════════════════════ -->
+<div class="view" id="v-team">
+  <div class="hdr">
+    <div class="hdr-row">
+      <div class="hdr-logo">
+        <svg viewBox="0 0 40 44" fill="none"><path d="M5 22 L20 8 L35 22" stroke="#d4a832" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 20 L9 37 L31 37 L31 20" stroke="#d4a832" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="15" y="27" width="10" height="10" rx="2" stroke="#d4a832" stroke-width="1.8"/><path d="M28 14 C35 9,41 15,36 22 C33 17,30 15,28 14Z" fill="#c8a028" opacity=".95"/></svg>
+        <div class="hdr-brand"><span class="hdr-brand-name">Zespół</span><span class="hdr-brand-sub">1 aktywna</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll">
+    <div class="slbl" style="padding-top:14px">Aktywni</div>
+    <div class="team-list">
+      <div class="tc">
+        <div class="tc-av" style="background:linear-gradient(135deg,#c46880,var(--rose))">LN</div>
+        <div class="tc-info">
+          <div class="tc-name">Luiza Niedźwiecka</div>
+          <div class="tc-role">Właścicielka · Administrator</div>
+          <div class="tc-meta">
+            <div class="online-dot"></div>
+            <span style="font-size:11px;color:var(--green)">Online teraz</span>
+            <span class="tag rose" style="margin-left:4px">Admin</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slbl">Statystyki miesiąca</div>
+    <div class="stats-row" id="team-stats">
+      <div class="stat rs"><div class="stat-num">—</div><div class="stat-lbl">Miesiąc</div></div>
+      <div class="stat gn"><div class="stat-num">—</div><div class="stat-lbl">Zrobione</div></div>
+      <div class="stat"><div class="stat-num">—</div><div class="stat-lbl">Nadchodzą</div></div>
+    </div>
+    <div class="slbl">Gotowe na rozbudowę</div>
+    <div style="padding:0 12px">
+      <div class="og ind-t" style="flex-direction:row;align-items:center;gap:12px">
+        <span style="font-size:28px">👤</span>
+        <div><div class="og-name">Zaproś pracownika</div><div class="og-desc">Dodaj osobę — zobaczy tylko swoje zlecenia</div></div>
+      </div>
+    </div>
+    <div style="height:40px"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     VIEW: BIURO
+══════════════════════════════════════ -->
+<div class="view" id="v-office">
+  <div class="hdr">
+    <div class="hdr-row">
+      <div class="hdr-logo">
+        <svg viewBox="0 0 40 44" fill="none"><path d="M5 22 L20 8 L35 22" stroke="#d4a832" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 20 L9 37 L31 37 L31 20" stroke="#d4a832" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="15" y="27" width="10" height="10" rx="2" stroke="#d4a832" stroke-width="1.8"/><path d="M28 14 C35 9,41 15,36 22 C33 17,30 15,28 14Z" fill="#c8a028" opacity=".95"/></svg>
+        <div class="hdr-brand"><span class="hdr-brand-name">Biuro</span><span class="hdr-brand-sub">Administracja</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll">
+    <div class="slbl" style="padding-top:14px">Szybki dostęp</div>
+    <div class="office-grid">
+      <div class="og sos-t full">
+        <button class="sos-pulse" onclick="triggerSOS()">🆘</button>
+        <div><div class="og-name" style="color:var(--red)">Przycisk SOS</div><div class="og-desc">Pobiera GPS i wysyła alert z lokalizacją</div></div>
+      </div>
+      <div class="og rose-t" onclick="openModal('modal-note')"><div class="og-ico">📝</div><div class="og-name">Notatki</div><div class="og-desc">Szybka notatka, hasła</div></div>
+      <div class="og ind-t"><div class="og-ico">📄</div><div class="og-name">Dokumenty</div><div class="og-desc">Umowy, cennik</div></div>
+      <div class="og"><div class="og-ico">📊</div><div class="og-name">Raporty</div><div class="og-desc">Miesiąc, statystyki</div></div>
+      <div class="og"><div class="og-ico">⚙️</div><div class="og-name">Ustawienia</div><div class="og-desc">Profil, powiadomienia</div></div>
+    </div>
+    <div class="slbl">Ostatnie notatki</div>
+    <div id="notes-list"></div>
+    <div class="gap2"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SUBVIEW: SZCZEGÓŁY ZLECENIA
+══════════════════════════════════════ -->
+<div class="subview" id="sub-order">
+  <div class="sub-hdr">
+    <button class="back-btn" onclick="closeSub('sub-order')">← Wróć</button>
+    <span class="sub-chip" id="order-chip">Zlecenie</span>
+    <div class="sub-title" id="order-title">—</div>
+    <div class="sub-sub" id="order-sub">—</div>
+  </div>
+  <div class="scroll">
+    <div class="gap"></div>
+    <div class="status-grid" id="order-status-grid">
+      <div class="sg-lbl">Status zlecenia</div>
+      <div class="sbtn" data-s="pl" onclick="setOrderStatus('pl',this)"><span class="si">📅</span>Planowane</div>
+      <div class="sbtn" data-s="co" onclick="setOrderStatus('co',this)"><span class="si">✅</span>Potwierdzone</div>
+      <div class="sbtn" data-s="ip" onclick="setOrderStatus('ip',this)"><span class="si">🔄</span>W trakcie</div>
+      <div class="sbtn" data-s="dn" onclick="setOrderStatus('dn',this)"><span class="si">🏁</span>Zakończone</div>
+    </div>
+    <div class="gap"></div>
+    <div class="icard" id="order-client-card"></div>
+    <div class="gap"></div>
+    <div id="order-map-wrap"></div>
+    <div class="gap"></div>
+    <div class="icard" id="order-desc-card"></div>
+    <div class="gap"></div>
+    <div class="photo-card">
+      <div class="icard-hd">📷 Zdjęcia</div>
+      <div class="photo-grid">
+        <div class="pb has-rose"><span class="pi">🌅</span><span class="pl">Przed</span><span class="pc">Dodaj</span></div>
+        <div class="pb"><span class="pi">✨</span><span class="pl">Po</span><span class="pc">Dodaj</span></div>
+        <div class="pb"><span class="pi">⚠️</span><span class="pl">Uwaga</span><span class="pc">Dodaj</span></div>
+        <div class="pb"><span class="pi">🔒</span><span class="pl">Wrażliwe</span><span class="pc">Dodaj</span></div>
+      </div>
+      <div class="thumbs"><div class="thumb add">＋</div></div>
+    </div>
+    <div class="gap"></div>
+    <button class="bigbtn indigo" id="order-main-btn" onclick="advanceStatus()">🔄 Rozpocznij</button>
+    <div class="gap"></div>
+    <button class="bigbtn" style="margin:0 12px;width:calc(100% - 24px);background:var(--card);border:1px solid var(--border2);color:var(--t2)" onclick="editCurrentOrder()">✏️ Edytuj zlecenie</button>
+    <div class="gap"></div>
+    <div class="delete-row"><button class="del-btn" onclick="deleteCurrentOrder()">🗑 Usuń zlecenie</button></div>
+    <div class="gap2"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SUBVIEW: KARTA KLIENTA
+══════════════════════════════════════ -->
+<div class="subview" id="sub-client">
+  <div class="sub-hdr">
+    <button class="back-btn" onclick="closeSub('sub-client')">← Klienci</button>
+    <span class="sub-chip" id="client-chip">Klient</span>
+    <div class="sub-title" id="client-title">—</div>
+    <div class="sub-sub" id="client-sub">—</div>
+  </div>
+  <div class="scroll">
+    <div class="gap"></div>
+    <div class="icard" id="client-contact-card"></div>
+    <div class="gap"></div>
+    <div id="client-map-wrap"></div>
+    <div class="gap"></div>
+    <div id="client-notes-wrap"></div>
+    <div id="client-notes-gap"></div>
+    <div class="icard" id="client-history-card"></div>
+    <div class="gap"></div>
+    <button class="bigbtn rose-btn" id="client-new-order-btn">＋ Nowe zlecenie</button>
+    <div class="gap"></div>
+    <button class="bigbtn" style="margin:0 12px;width:calc(100% - 24px);background:var(--card);border:1px solid var(--border2);color:var(--t2)" onclick="editCurrentClient()">✏️ Edytuj dane klienta</button>
+    <div class="gap"></div>
+    <div class="delete-row"><button class="del-btn" onclick="deleteCurrentClient()">🗑 Usuń klienta</button></div>
+    <div class="gap2"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: NOWE/EDYTUJ ZLECENIE
+══════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-order" onclick="overlayClose(event,'modal-order')">
+  <div class="modal-sheet">
+    <div class="modal-hd">
+      <span class="modal-title" id="modal-order-title">Nowe zlecenie</span>
+      <button class="modal-close" onclick="closeModal('modal-order')">Anuluj</button>
+    </div>
+    <div class="form-body">
+      <input type="hidden" id="f-order-id">
+      <div class="field">
+        <label>Klient *</label>
+        <select id="f-order-client"><option value="">— Wybierz klienta —</option></select>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Data *</label><input type="date" id="f-order-date"></div>
+        <div class="field"><label>Godzina</label><input type="time" id="f-order-time" value="09:00"></div>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select id="f-order-status">
+          <option value="pl">📅 Planowane</option>
+          <option value="co">✅ Potwierdzone</option>
+          <option value="ip">🔄 W trakcie</option>
+          <option value="dn">🏁 Zakończone</option>
+        </select>
+      </div>
+      <div class="field"><label>Opis</label><textarea id="f-order-desc" rows="3" placeholder="Np. sprzątanie generalne, uwaga na łazienkę…"></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="bigbtn indigo mt0" style="margin:0;width:100%" onclick="saveOrder()">✓ Zapisz zlecenie</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: NOWY/EDYTUJ KLIENT
+══════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-client" onclick="overlayClose(event,'modal-client')">
+  <div class="modal-sheet">
+    <div class="modal-hd">
+      <span class="modal-title" id="modal-client-title">Nowy klient</span>
+      <button class="modal-close" onclick="closeModal('modal-client')">Anuluj</button>
+    </div>
+    <div class="form-body">
+      <input type="hidden" id="f-client-id">
+      <div class="field"><label>Imię / Nazwa *</label><input type="text" id="f-client-name" placeholder="np. Maria Kowalska"></div>
+      <div class="field"><label>Adres</label><input type="text" id="f-client-addr" placeholder="np. ul. Lipowa 12/4, Warszawa"></div>
+      <div class="form-row">
+        <div class="field"><label>Telefon</label><input type="tel" id="f-client-phone" placeholder="+48 600 000 000"></div>
+        <div class="field"><label>Domofon</label><input type="text" id="f-client-intercom" placeholder="1234#"></div>
+      </div>
+      <div class="field"><label>Uwagi ⚠️</label><textarea id="f-client-notes" rows="3" placeholder="Np. czarny kot, gniazdko nie działa…"></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="bigbtn rose-btn mt0" style="margin:0;width:100%" onclick="saveClient()">✓ Zapisz klienta</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: NOWA NOTATKA
+══════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-note" onclick="overlayClose(event,'modal-note')">
+  <div class="modal-sheet">
+    <div class="modal-hd">
+      <span class="modal-title">Nowa notatka</span>
+      <button class="modal-close" onclick="closeModal('modal-note')">Anuluj</button>
+    </div>
+    <div class="form-body">
+      <div class="field"><label>Tytuł *</label><input type="text" id="f-note-title" placeholder="np. Wi-Fi u klienta"></div>
+      <div class="field"><label>Treść</label><textarea id="f-note-body" rows="4" placeholder="Hasła, instrukcje, przypomnienia…"></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="bigbtn rose-btn mt0" style="margin:0;width:100%" onclick="saveNote()">✓ Zapisz notatkę</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+</div><!-- /view-area -->
+
+<!-- ══════════════════════════════════════
+     BOTTOM NAV
+══════════════════════════════════════ -->
+<nav class="bnav">
+  <div class="ni on" data-view="v-sched" onclick="switchView('v-sched',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span class="nl">Grafik</span>
+  </div>
+  <div class="ni" data-view="v-clients" onclick="switchView('v-clients',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <span class="nl">Klienci</span>
+  </div>
+  <div class="ni" data-view="v-team" onclick="switchView('v-team',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <span class="nl">Zespół</span>
+  </div>
+  <div class="ni" data-view="v-office" onclick="switchView('v-office',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="nl">Biuro</span>
+  </div>
+</nav>
+
+</div><!-- /app -->
+
+<script>
+'use strict';
+/* ════════════════════════════════════════
+   DATA LAYER — localStorage
+   Każda funkcja to jeden punkt wymiany na Supabase
+════════════════════════════════════════ */
+const DB = {
+  _get(k)    { try{ return JSON.parse(localStorage.getItem(k)||'[]'); }catch{ return []; } },
+  _set(k,v)  { localStorage.setItem(k, JSON.stringify(v)); },
+
+  getClients()         { return this._get('co_clients'); },
+  getClient(id)        { return this.getClients().find(c=>c.id===id)||null; },
+  addClient(d)         { const a=this.getClients(); d.id='c_'+Date.now(); d.createdAt=new Date().toISOString(); a.push(d); this._set('co_clients',a); return d; },
+  updateClient(id,d)   { this._set('co_clients', this.getClients().map(c=>c.id===id?{...c,...d}:c)); },
+  deleteClient(id)     { this._set('co_clients', this.getClients().filter(c=>c.id!==id)); this._set('co_orders', this.getOrders().filter(o=>o.clientId!==id)); },
+
+  getOrders()          { return this._get('co_orders'); },
+  getOrder(id)         { return this.getOrders().find(o=>o.id===id)||null; },
+  getOrdersByDate(d)   {
+    return this.getOrders()
+      .filter(o => o.date === d)
+      .sort((a, b) => {
+        const norm = t => { const p = (t||'00:00').split(':'); return p[0].padStart(2,'0') + ':' + (p[1]||'00'); };
+        return norm(a.time).localeCompare(norm(b.time));
+      });
+  },
+  getOrdersByClient(ci){ return this.getOrders().filter(o=>o.clientId===ci).sort((a,b)=>b.date.localeCompare(a.date)); },
+  addOrder(d)          { const a=this.getOrders(); d.id='o_'+Date.now(); d.createdAt=new Date().toISOString(); a.push(d); this._set('co_orders',a); return d; },
+  updateOrder(id,d)    { this._set('co_orders', this.getOrders().map(o=>o.id===id?{...o,...d}:o)); },
+  deleteOrder(id)      { this._set('co_orders', this.getOrders().filter(o=>o.id!==id)); },
+
+  getNotes()           { return this._get('co_notes'); },
+  addNote(d)           { const a=this.getNotes(); d.id='n_'+Date.now(); d.createdAt=new Date().toISOString(); a.unshift(d); this._set('co_notes',a); return d; },
+  deleteNote(id)       { this._set('co_notes', this.getNotes().filter(n=>n.id!==id)); }
+};
+
+/* ════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════ */
+const STATUS = {
+  pl:{ label:'Planowane',    cls:'pl', icon:'📅' },
+  co:{ label:'Potwierdzone', cls:'co', icon:'✅' },
+  ip:{ label:'W trakcie',    cls:'ip', icon:'🔄' },
+  dn:{ label:'Zakończone',   cls:'dn', icon:'🏁' }
+};
+const STATUS_NEXT = { pl:'co', co:'ip', ip:'dn', dn:'dn' };
+const MONTHS_PL = ['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function datePL(str) {
+  if (!str || typeof str !== 'string') return '—';
+  const parts = str.split('-');
+  if (parts.length !== 3) return str;
+  const [y, m, d] = parts;
+  const mi = parseInt(m, 10) - 1;
+  if (mi < 0 || mi > 11) return str;
+  return `${parseInt(d, 10)} ${MONTHS_PL[mi]} ${y}`;
+}
+function initials(name) {
+  return (name||'?').split(' ').filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('');
+}
+function avatarCls(name) {
+  return [...(name||'')].reduce((s,c)=>s+c.charCodeAt(0),0)%2===0 ? 'ros' : 'ind';
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let _selectedDate = todayStr();
+let _currentOrderId = null;
+let _currentClientId = null;
+
+/* ════════════════════════════════════════
+   SEED — demo data (only on first visit)
+════════════════════════════════════════ */
+function seedIfEmpty() {
+  if (DB.getClients().length) return;
+  const c1 = DB.addClient({ name:'Maria Zientek', address:'ul. Lipowa 12/4, Warszawa', phone:'+48 602 111 222', intercom:'1234#', notes:'Czarny kot — nie wypuszczać! Gniazdko w kuchni nie działa.' });
+  const c2 = DB.addClient({ name:'Janusz Kaczmarek', address:'ul. Nowa 5, Warszawa', phone:'+48 500 200 300', intercom:'', notes:'Biuro, piętro 2. Klucz u sekretarki.' });
+  const c3 = DB.addClient({ name:'Aleksander Pietruk', address:'ul. Piaskowa 33/2, Warszawa', phone:'+48 601 333 444', intercom:'5678#', notes:'' });
+  const today = todayStr();
+  const tom   = new Date(Date.now()+86400000).toISOString().slice(0,10);
+  DB.addOrder({ clientId:c1.id, date:today, time:'08:00', status:'co', desc:'Sprzątanie generalne mieszkania 3-pokojowego. Uwaga na łazienkę i kuchnię.' });
+  DB.addOrder({ clientId:c2.id, date:today, time:'11:30', status:'ip', desc:'Biuro — piętro 2.' });
+  DB.addOrder({ clientId:c3.id, date:today, time:'15:00', status:'pl', desc:'Sprzątanie po remoncie.' });
+  DB.addOrder({ clientId:c1.id, date:tom,   time:'09:00', status:'co', desc:'Cotygodniowe sprzątanie.' });
+  DB.addNote({ title:'Wi-Fi u Marii Zientek',  body:'Sieć: MariaDom · Hasło: kwiatki2024' });
+  DB.addNote({ title:'Cennik 2026', body:'1-pok. 180 zł · 2-pok. 240 zł · 3-pok. 300 zł' });
+}
+
+/* ════════════════════════════════════════
+   RENDER: DATE STRIP
+════════════════════════════════════════ */
+function renderDateStrip() {
+  const strip = document.getElementById('date-strip');
+  const DAYS  = ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'];
+  const today = new Date(); today.setHours(0,0,0,0);
+  const allDates = new Set(DB.getOrders().map(o=>o.date));
+  let html = '';
+  for (let i = -1; i < 14; i++) {
+    const d  = new Date(today); d.setDate(today.getDate()+i);
+    const ds = d.toISOString().slice(0,10);
+    const on = ds === _selectedDate ? ' on' : '';
+    html += `<div class="dp${on}" onclick="selectDate('${ds}')">
+      <span class="dw">${DAYS[d.getDay()]}</span>
+      <span class="dd">${d.getDate()}</span>
+      ${allDates.has(ds) ? '<span class="dot"></span>' : ''}
+    </div>`;
+  }
+  strip.innerHTML = html;
+}
+
+function selectDate(ds) {
+  _selectedDate = ds;
+  renderDateStrip();
+  renderOrders();
+}
+
+/* ════════════════════════════════════════
+   RENDER: ORDERS
+════════════════════════════════════════ */
+function renderOrders() {
+  const list   = document.getElementById('order-list');
+  const orders = DB.getOrdersByDate(_selectedDate);
+  const today  = todayStr();
+  const tom    = new Date(Date.now()+86400000).toISOString().slice(0,10);
+  const dayLabel = _selectedDate===today ? 'Dziś' : _selectedDate===tom ? 'Jutro' : datePL(_selectedDate);
+
+  document.getElementById('sched-lbl').textContent = `${dayLabel} — ${orders.length} ${orders.length===1?'zlecenie':orders.length<5?'zlecenia':'zleceń'}`;
+  const allToday = DB.getOrdersByDate(today);
+  document.getElementById('sched-sub').textContent = `${datePL(today)} · ${allToday.length} dziś`;
+
+  if (!orders.length) {
+    list.innerHTML = `<div class="empty"><div class="ei">📭</div><div class="et">Brak zleceń na ten dzień</div><div class="ea" onclick="openModal('modal-order')">＋ Dodaj zlecenie</div></div>`;
+    return;
+  }
+  list.innerHTML = orders.map(o => {
+    const cl = DB.getClient(o.clientId);
+    const s  = STATUS[o.status]||STATUS.pl;
+    return `<div class="oc ${s.cls}" onclick="openOrder('${o.id}')">
+      <div class="oc-bar"></div>
+      <div class="oc-time"><span class="t">${esc(o.time||'—')}</span></div>
+      <div class="oc-body">
+        <div class="oc-client">${esc(cl ? cl.name : 'Nieznany klient')}</div>
+        <div class="oc-desc">${esc(o.desc||'Brak opisu')}</div>
+        <div class="oc-meta"><span class="badge ${s.cls}">${s.label}</span></div>
+      </div>
+      <div class="oc-arr">›</div>
+    </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════
+   RENDER: CLIENTS
+════════════════════════════════════════ */
+function renderClients() {
+  const q    = (document.getElementById('client-search')?.value||'').toLowerCase();
+  let clients = DB.getClients();
+  if (q) clients = clients.filter(c=>(c.name+' '+(c.address||'')).toLowerCase().includes(q));
+  document.getElementById('clients-count').textContent = `${DB.getClients().length} aktywnych`;
+
+  const list = document.getElementById('client-list');
+  if (!clients.length) {
+    list.innerHTML = `<div class="empty"><div class="ei">👥</div><div class="et">${q?'Brak wyników dla "'+esc(q)+'"':'Dodaj pierwszego klienta'}</div>${!q?'<div class="ea" onclick="openModal(\'modal-client\')">＋ Nowy klient</div>':''}</div>`;
+    return;
+  }
+  const cnt = {};
+  DB.getOrders().forEach(o=>{ cnt[o.clientId]=(cnt[o.clientId]||0)+1; });
+  list.innerHTML = clients.map(c => {
+    const n = cnt[c.id]||0;
+    return `<div class="cc" onclick="openClient('${c.id}')">
+      <div class="cc-av ${avatarCls(c.name)}">${initials(c.name)}</div>
+      <div class="cc-info">
+        <div class="cc-name">${esc(c.name)}</div>
+        <div class="cc-addr">${esc(c.address||'Brak adresu')}</div>
+        <div class="cc-tags">
+          ${n?`<span class="tag green">${n} ${n===1?'zlecenie':n<5?'zlecenia':'zleceń'}</span>`:''}
+          ${c.notes?'<span class="tag rose">⚠️ Uwagi</span>':''}
+        </div>
+      </div>
+      <div class="oc-arr">›</div>
+    </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════
+   RENDER: TEAM STATS
+════════════════════════════════════════ */
+function renderTeamStats() {
+  const now   = new Date();
+  const month = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const all   = DB.getOrders();
+  const monthly  = all.filter(o=>o.date&&o.date.startsWith(month));
+  const done     = monthly.filter(o=>o.status==='dn').length;
+  const upcoming = all.filter(o=>o.date>=todayStr()&&o.status!=='dn').length;
+  document.getElementById('team-stats').innerHTML = `
+    <div class="stat rs"><div class="stat-num">${monthly.length}</div><div class="stat-lbl">Miesiąc</div></div>
+    <div class="stat gn"><div class="stat-num">${done}</div><div class="stat-lbl">Zrobione</div></div>
+    <div class="stat"><div class="stat-num">${upcoming}</div><div class="stat-lbl">Nadchodzą</div></div>`;
+}
+
+/* ════════════════════════════════════════
+   RENDER: NOTES
+════════════════════════════════════════ */
+function renderNotes() {
+  const notes = DB.getNotes();
+  const el    = document.getElementById('notes-list');
+  if (!notes.length) {
+    el.innerHTML = `<div class="empty" style="padding:24px 20px"><div class="ei">📝</div><div class="et">Brak notatek</div><div class="ea" onclick="openModal('modal-note')">＋ Nowa notatka</div></div>`;
+    return;
+  }
+  el.innerHTML = notes.map(n => {
+    const d = new Date(n.createdAt);
+    const ds = `${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+    return `<div class="note-item" onclick="confirmDeleteNote('${n.id}')">
+      <div class="note-t">${esc(n.title)}</div>
+      ${n.body?`<div class="note-b">${esc(n.body)}</div>`:''}
+      <div class="note-d">${ds} · Kliknij by usunąć</div>
+    </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════
+   OPEN ORDER DETAIL
+════════════════════════════════════════ */
+function openOrder(id) {
+  _currentOrderId = id;
+  const o  = DB.getOrder(id); if (!o) return;
+  const cl = DB.getClient(o.clientId);
+  const s  = STATUS[o.status]||STATUS.pl;
+
+  document.getElementById('order-chip').textContent  = `${s.icon} ${s.label}`;
+  document.getElementById('order-title').textContent = cl ? cl.name : 'Nieznany klient';
+  document.getElementById('order-sub').textContent   = `📅 ${datePL(o.date)}  ·  ⏰ ${o.time}`;
+
+  // status buttons
+  document.querySelectorAll('#order-status-grid .sbtn').forEach(b => {
+    b.className = 'sbtn' + (b.dataset.s===o.status ? ' a-'+o.status : '');
+  });
+
+  // client card
+  const cc = document.getElementById('order-client-card');
+  cc.innerHTML = `<div class="icard-hd">🏠 Dane klienta</div>` + (cl ? `
+    <div class="irow"><span class="ik">Imię</span><span class="iv">${esc(cl.name)}</span></div>
+    ${cl.phone?`<div class="irow"><span class="ik">Telefon</span><span class="iv blue">${esc(cl.phone)}</span></div>`:''}
+    ${cl.intercom?`<div class="irow"><span class="ik">Domofon</span><span class="iv code">${esc(cl.intercom)}</span></div>`:''}
+    ${cl.notes?`<div class="irow"><span class="ik">Uwagi</span><span class="iv rose">⚠️ ${esc(cl.notes)}</span></div>`:''}
+  ` : `<div class="irow"><span class="ik" style="color:var(--t3)">Brak danych klienta</span></div>`);
+
+  // map
+  const mw = document.getElementById('order-map-wrap');
+  mw.innerHTML = cl&&cl.address
+    ? `<a class="map-btn" href="https://maps.google.com/?q=${encodeURIComponent(cl.address)}" target="_blank">
+        <span class="map-ico">📍</span>
+        <div class="map-txt"><div class="mt1">Otwórz w Google Maps</div><div class="mt2">${esc(cl.address)}</div></div>
+        <span class="map-arr">↗</span></a>` : '';
+
+  // desc
+  document.getElementById('order-desc-card').innerHTML = `<div class="icard-hd">📝 Opis</div>
+    <div class="irow" style="display:block;padding:12px 15px">
+      <span style="font-size:13px;color:var(--t2);line-height:1.6">${esc(o.desc||'Brak opisu')}</span>
+    </div>`;
+
+  refreshMainBtn(o.status);
+  openSub('sub-order');
+}
+
+function refreshMainBtn(status) {
+  const btn = document.getElementById('order-main-btn');
+  const MAP = {
+    pl:{ t:'✅ Potwierdź', cls:'indigo' },
+    co:{ t:'🔄 Rozpocznij', cls:'indigo' },
+    ip:{ t:'🏁 Zakończ zlecenie', cls:'rose-btn' },
+    dn:{ t:'✓ Zakończone', cls:'ghost' }
+  };
+  const a = MAP[status]||MAP.pl;
+  btn.textContent = a.t;
+  btn.className = `bigbtn ${a.cls}`;
+}
+
+function setOrderStatus(s, btn) {
+  if (!_currentOrderId) return;
+  DB.updateOrder(_currentOrderId, { status:s });
+  document.querySelectorAll('#order-status-grid .sbtn').forEach(b => {
+    b.className = 'sbtn' + (b.dataset.s===s ? ' a-'+s : '');
+  });
+  const sm = STATUS[s];
+  document.getElementById('order-chip').textContent = `${sm.icon} ${sm.label}`;
+  refreshMainBtn(s);
+  renderOrders(); renderDateStrip();
+  toast(`Status: ${sm.label}`, 'success');
+}
+
+function advanceStatus() {
+  const o = DB.getOrder(_currentOrderId);
+  if (!o||o.status==='dn') return;
+  const next = STATUS_NEXT[o.status];
+  setOrderStatus(next, document.querySelector(`#order-status-grid .sbtn[data-s="${next}"]`));
+}
+
+function editCurrentOrder() {
+  const o = DB.getOrder(_currentOrderId); if (!o) return;
+  document.getElementById('f-order-id').value     = o.id;
+  document.getElementById('modal-order-title').textContent = 'Edytuj zlecenie';
+  document.getElementById('f-order-client').value = o.clientId;
+  document.getElementById('f-order-date').value   = o.date;
+  document.getElementById('f-order-time').value   = o.time;
+  document.getElementById('f-order-status').value = o.status;
+  document.getElementById('f-order-desc').value   = o.desc||'';
+  populateClientSelect(o.clientId);
+  openModal('modal-order');
+}
+
+function deleteCurrentOrder() {
+  if (!confirm('Usunąć to zlecenie?')) return;
+  DB.deleteOrder(_currentOrderId);
+  closeSub('sub-order');
+  renderOrders(); renderDateStrip();
+  toast('Zlecenie usunięte');
+}
+
+/* ════════════════════════════════════════
+   OPEN CLIENT DETAIL
+════════════════════════════════════════ */
+function openClient(id) {
+  _currentClientId = id;
+  const c = DB.getClient(id); if (!c) return;
+  const orders = DB.getOrdersByClient(id);
+
+  document.getElementById('client-chip').textContent  = `${orders.length} ${orders.length===1?'zlecenie':orders.length<5?'zlecenia':'zleceń'}`;
+  document.getElementById('client-title').textContent = c.name;
+  document.getElementById('client-sub').textContent   = c.phone||c.address||'';
+
+  // contact
+  document.getElementById('client-contact-card').innerHTML = `
+    <div class="icard-hd">📞 Dane kontaktowe<span class="icard-edit" onclick="editCurrentClient()">✏️ Edytuj</span></div>
+    ${c.phone?`<div class="irow"><span class="ik">Telefon</span><span class="iv blue">${esc(c.phone)}</span></div>`:''}
+    ${c.address?`<div class="irow"><span class="ik">Adres</span><span class="iv">${esc(c.address)}</span></div>`:''}
+    ${c.intercom?`<div class="irow"><span class="ik">Domofon</span><span class="iv code">${esc(c.intercom)}</span></div>`:''}`;
+
+  // map
+  document.getElementById('client-map-wrap').innerHTML = c.address
+    ? `<a class="map-btn" href="https://maps.google.com/?q=${encodeURIComponent(c.address)}" target="_blank">
+        <span class="map-ico">📍</span>
+        <div class="map-txt"><div class="mt1">Otwórz w Google Maps</div><div class="mt2">${esc(c.address)}</div></div>
+        <span class="map-arr">↗</span></a>` : '';
+
+  // notes
+  const nw = document.getElementById('client-notes-wrap');
+  const ng = document.getElementById('client-notes-gap');
+  if (c.notes) {
+    nw.innerHTML = `<div class="icard"><div class="icard-hd">⚠️ Ważne uwagi</div>
+      <div class="irow" style="display:block;padding:12px 15px">
+        <span class="iv rose" style="display:block;text-align:left;font-size:13px;line-height:1.6">${esc(c.notes)}</span>
+      </div></div>`;
+    ng.innerHTML = '<div class="gap"></div>';
+  } else {
+    nw.innerHTML = ''; ng.innerHTML = '';
+  }
+
+  // history
+  const hc = document.getElementById('client-history-card');
+  hc.innerHTML = `<div class="icard-hd">📋 Historia zleceń (${orders.length})</div>` +
+    (orders.length ? orders.slice(0,6).map(o=>{
+      const s=STATUS[o.status]||STATUS.pl;
+      return `<div class="irow tap" onclick="openOrder('${o.id}')">
+        <div><div style="font-size:13px;font-weight:600">${datePL(o.date)} · ${esc(o.time)}</div>
+        <div style="font-size:11px;color:var(--t2);margin-top:1px">${esc(o.desc||'Brak opisu')}</div></div>
+        <span class="badge ${s.cls}">${s.label}</span>
+      </div>`;
+    }).join('')+(orders.length>6?`<div class="irow"><span class="ik" style="color:var(--t3)">…i ${orders.length-6} więcej</span></div>`:'')
+    : `<div class="irow"><span class="ik" style="color:var(--t3)">Brak zleceń</span></div>`);
+
+  document.getElementById('client-new-order-btn').textContent = `＋ Nowe zlecenie dla ${c.name.split(' ')[0]}`;
+  document.getElementById('client-new-order-btn').onclick = () => openOrderModalForClient(id);
+
+  openSub('sub-client');
+}
+
+function editCurrentClient() {
+  const c = DB.getClient(_currentClientId); if (!c) return;
+  document.getElementById('f-client-id').value            = c.id;
+  document.getElementById('modal-client-title').textContent = 'Edytuj klienta';
+  document.getElementById('f-client-name').value          = c.name||'';
+  document.getElementById('f-client-addr').value          = c.address||'';
+  document.getElementById('f-client-phone').value         = c.phone||'';
+  document.getElementById('f-client-intercom').value      = c.intercom||'';
+  document.getElementById('f-client-notes').value         = c.notes||'';
+  openModal('modal-client');
+}
+
+function deleteCurrentClient() {
+  const c = DB.getClient(_currentClientId);
+  if (!confirm(`Usunąć klienta „${c?.name}"?\nWszystkie zlecenia tego klienta zostaną usunięte.`)) return;
+  DB.deleteClient(_currentClientId);
+  closeSub('sub-client');
+  renderClients(); renderOrders(); renderDateStrip();
+  toast('Klient usunięty');
+}
+
+/* ════════════════════════════════════════
+   SAVE FORMS
+════════════════════════════════════════ */
+function saveClient() {
+  const name = document.getElementById('f-client-name').value.trim();
+  if (!name) { toast('Wpisz imię lub nazwę klienta', 'error'); return; }
+  const data = {
+    name,
+    address:  document.getElementById('f-client-addr').value.trim(),
+    phone:    document.getElementById('f-client-phone').value.trim(),
+    intercom: document.getElementById('f-client-intercom').value.trim(),
+    notes:    document.getElementById('f-client-notes').value.trim()
+  };
+  const editId = document.getElementById('f-client-id').value;
+  if (editId) {
+    DB.updateClient(editId, data);
+    closeModal('modal-client');
+    renderClients(); populateClientSelect();
+    // refresh subview if open
+    if (document.getElementById('sub-client').classList.contains('open')) openClient(editId);
+    toast('✓ Dane klienta zaktualizowane', 'success');
+  } else {
+    DB.addClient(data);
+    closeModal('modal-client');
+    renderClients(); populateClientSelect();
+    toast(`✓ Dodano: ${name}`, 'success');
+  }
+}
+
+function saveOrder() {
+  const clientId = document.getElementById('f-order-client').value;
+  const date     = document.getElementById('f-order-date').value;
+  if (!clientId) { toast('Wybierz klienta', 'error'); return; }
+  if (!date)     { toast('Wybierz datę', 'error'); return; }
+  const data = {
+    clientId,
+    date,
+    time:   document.getElementById('f-order-time').value || '09:00',
+    status: document.getElementById('f-order-status').value,
+    desc:   document.getElementById('f-order-desc').value.trim()
+  };
+  const editId = document.getElementById('f-order-id').value;
+  if (editId) {
+    DB.updateOrder(editId, data);
+    closeModal('modal-order');
+    _selectedDate = data.date;
+    renderOrders(); renderDateStrip(); renderTeamStats();
+    if (document.getElementById('sub-order').classList.contains('open')) openOrder(editId);
+    toast('✓ Zlecenie zaktualizowane', 'success');
+  } else {
+    DB.addOrder(data);
+    closeModal('modal-order');
+    _selectedDate = data.date;
+    renderOrders(); renderDateStrip(); renderTeamStats();
+    toast('✓ Zlecenie dodane', 'success');
+  }
+}
+
+function saveNote() {
+  const title = document.getElementById('f-note-title').value.trim();
+  if (!title) { toast('Wpisz tytuł notatki', 'error'); return; }
+  DB.addNote({ title, body: document.getElementById('f-note-body').value.trim() });
+  document.getElementById('f-note-title').value = '';
+  document.getElementById('f-note-body').value  = '';
+  closeModal('modal-note');
+  renderNotes();
+  toast('✓ Notatka zapisana', 'success');
+}
+
+function confirmDeleteNote(id) {
+  if (!confirm('Usunąć tę notatkę?')) return;
+  DB.deleteNote(id); renderNotes();
+  toast('Notatka usunięta');
+}
+
+/* ════════════════════════════════════════
+   MODAL HELPERS
+════════════════════════════════════════ */
+function openModal(id) {
+  if (id==='modal-order') {
+    const editId = document.getElementById('f-order-id').value;
+    if (!editId) {
+      document.getElementById('modal-order-title').textContent = 'Nowe zlecenie';
+      document.getElementById('f-order-date').value    = _selectedDate;
+      document.getElementById('f-order-time').value    = '09:00';
+      document.getElementById('f-order-status').value  = 'pl';
+      document.getElementById('f-order-desc').value    = '';
+      populateClientSelect();
+      document.getElementById('f-order-client').value  = '';
+    }
+  }
+  if (id==='modal-client') {
+    const editId = document.getElementById('f-client-id').value;
+    if (!editId) {
+      document.getElementById('modal-client-title').textContent = 'Nowy klient';
+      ['f-client-name','f-client-addr','f-client-phone','f-client-intercom','f-client-notes']
+        .forEach(f => document.getElementById(f).value = '');
+    }
+  }
+  const el = document.getElementById(id);
+  el.style.display = 'flex';
+  requestAnimationFrame(() => el.classList.add('open'));
+}
+
+function closeModal(id) {
+  const el = document.getElementById(id);
+  el.classList.remove('open');
+  // Czyść ID natychmiast — nie po timeoucie
+  const fid = el.querySelector('[id^="f-"][id$="-id"]');
+  if (fid) fid.value = '';
+  const mt = el.querySelector('.modal-title');
+  if (mt) {
+    if (id === 'modal-order')  mt.textContent = 'Nowe zlecenie';
+    if (id === 'modal-client') mt.textContent = 'Nowy klient';
+  }
+  setTimeout(() => { el.style.display = 'none'; }, 280);
+}
+
+function overlayClose(e, id) {
+  if (e.target===document.getElementById(id)) closeModal(id);
+}
+
+function openOrderModalForClient(clientId) {
+  document.getElementById('f-order-id').value = '';
+  openModal('modal-order');
+  document.getElementById('f-order-client').value = clientId;
+}
+
+function populateClientSelect(selectedId) {
+  const sel = document.getElementById('f-order-client');
+  const clients = DB.getClients().sort((a,b)=>a.name.localeCompare(b.name,'pl'));
+  sel.innerHTML = '<option value="">— Wybierz klienta —</option>' +
+    clients.map(c=>`<option value="${c.id}"${c.id===selectedId?' selected':''}>${esc(c.name)}</option>`).join('');
+}
+
+/* ════════════════════════════════════════
+   NAV & SUBVIEWS
+════════════════════════════════════════ */
+function switchView(id, el) {
+  document.querySelectorAll('.subview').forEach(s => s.classList.remove('open'));
+  document.querySelectorAll('.modal-overlay').forEach(m => { m.classList.remove('open'); m.style.display='none'; });
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('on'));
+  document.getElementById(id).classList.add('active');
+  el.classList.add('on');
+  if (id==='v-sched')   { renderOrders(); renderDateStrip(); }
+  if (id==='v-clients') renderClients();
+  if (id==='v-team')    renderTeamStats();
+  if (id==='v-office')  renderNotes();
+}
+
+function openSub(id) {
+  document.getElementById(id).classList.add('open');
+}
+
+function closeSub(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+/* ════════════════════════════════════════
+   TOAST
+════════════════════════════════════════ */
+let _tt;
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (type?' '+type:'');
+  clearTimeout(_tt);
+  _tt = setTimeout(()=>el.className='toast', 2800);
+}
+
+/* ════════════════════════════════════════
+   SOS — GPS + alert
+════════════════════════════════════════ */
+function triggerSOS() {
+  toast('📍 Pobieranie lokalizacji GPS…');
+  const send = loc => {
+    toast('🆘 Alert SOS wysłany!', 'error');
+    const info = loc
+      ? `Lokalizacja GPS:\n${loc}\nhttps://maps.google.com/?q=${loc}`
+      : 'Lokalizacja GPS niedostępna.';
+    setTimeout(()=>alert(`🆘 SOS WYSŁANY\n\nDo: +48 519 404 678\n\n${info}\n\n[Production: zastąp fetch() do Twilio SMS API]`), 200);
+  };
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      p => send(`${p.coords.latitude.toFixed(5)},${p.coords.longitude.toFixed(5)}`),
+      ()  => send(null),
+      { timeout:6000, enableHighAccuracy:true }
+    );
+  } else { send(null); }
+}
+
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+seedIfEmpty();
+renderDateStrip();
+renderOrders();
+renderClients();
+renderTeamStats();
+renderNotes();
+populateClientSelect(); // po seedzie — klienci już istnieją
+</script>
+</body>
+</html>

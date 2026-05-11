@@ -1,204 +1,1028 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AlPocket – AI Starter Pack</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4Matka — Zapytanie Ofertowe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0b;
+    --bg2: #111114;
+    --bg3: #18181c;
+    --bg4: #1e1e24;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #f0ede8;
+    --muted: #888580;
+    --muted2: #5a5855;
+    --accent: #c8b89a;
+    --accent2: #e8d5b0;
+    --green: #4a9e6e;
+    --green-bg: rgba(74,158,110,0.08);
+    --amber: #c49a3c;
+    --amber-bg: rgba(196,154,60,0.08);
+    --red: #c45a3c;
+    --red-bg: rgba(196,90,60,0.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
 
-  <style>
-    :root {
-      --primary: #00ffc3;
-      --secondary: #0064ff;
-      --bg: #0a0e17;
-      --text: #e6f1ff;
-      --glitch-color: #ff00c1;
-    }
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,11,0.94);
+    backdrop-filter: blur(14px);
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 54px;
+  }
+  .nav-left { display: flex; align-items: center; gap: 1.5rem; }
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    color: var(--accent2);
+    letter-spacing: 0.05em;
+  }
+  .nav-project {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-left: 0.5px solid var(--border2);
+    padding-left: 1.5rem;
+  }
+  .nav-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 1px;
+    border: 0.5px solid var(--amber);
+    color: var(--amber);
+    background: var(--amber-bg);
+  }
+  .progress-bar {
+    position: fixed; top: 54px; left: 0; right: 0;
+    height: 2px; background: var(--border); z-index: 99;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width: 0%; transition: width 0.1s linear;
+  }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+  /* LAYOUT */
+  .container { max-width: 860px; margin: 0 auto; padding: 0 2rem; }
+  .wide { max-width: 1080px; margin: 0 auto; padding: 0 2rem; }
 
-    body {
-      font-family: 'Space Mono', monospace;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      overflow-x: hidden;
-      min-height: 100vh;
-    }
+  /* HERO */
+  #hero {
+    padding: 6rem 0 5rem;
+    border-bottom: 0.5px solid var(--border);
+    background:
+      radial-gradient(ellipse at 10% 60%, rgba(200,184,154,0.05) 0%, transparent 55%),
+      radial-gradient(ellipse at 90% 10%, rgba(74,158,110,0.04) 0%, transparent 50%);
+    position: relative; overflow: hidden;
+  }
+  .grid-bg {
+    position: absolute; inset: 0; opacity: 0.025;
+    background-image: linear-gradient(var(--text) 1px, transparent 1px), linear-gradient(90deg, var(--text) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .hero-inner { position: relative; z-index: 1; }
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.4rem;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .eyebrow::before { content: ''; display: block; width: 28px; height: 1px; background: var(--accent); }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    font-weight: 700; line-height: 1.1;
+    margin-bottom: 0.2em;
+  }
+  h1 em { font-style: italic; color: var(--accent2); }
+  .hero-desc {
+    font-size: 1rem; color: var(--muted);
+    max-width: 520px; margin: 1.4rem 0 2.5rem;
+  }
+  .hero-meta {
+    display: flex; gap: 2rem; flex-wrap: wrap;
+  }
+  .meta-item {
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .meta-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; color: var(--accent2);
+  }
+  .meta-key {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted2);
+  }
 
-    /* Grid background */
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image: 
-        linear-gradient(0deg, transparent 24%, rgba(0, 255, 200, 0.03) 25%, transparent 27%),
-        linear-gradient(90deg, transparent 24%, rgba(0, 255, 200, 0.03) 25%, transparent 27%);
-      background-size: 40px 40px;
-      z-index: 1;
-      pointer-events: none;
-    }
+  /* STEP INDICATOR */
+  .steps-bar {
+    display: flex; gap: 0; border: 0.5px solid var(--border);
+    border-radius: 2px; overflow: hidden; margin: 3rem 0;
+  }
+  .step-tab {
+    flex: 1; padding: 0.9rem 1rem;
+    background: var(--bg2);
+    cursor: pointer;
+    border-right: 0.5px solid var(--border);
+    transition: background 0.2s;
+    text-align: center;
+  }
+  .step-tab:last-child { border-right: none; }
+  .step-tab.active { background: var(--bg3); border-bottom: 2px solid var(--accent); }
+  .step-tab:hover:not(.active) { background: var(--bg3); }
+  .step-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.58rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted2);
+    display: block; margin-bottom: 3px;
+  }
+  .step-label {
+    font-size: 0.78rem; font-weight: 500;
+    color: var(--muted);
+  }
+  .step-tab.active .step-label { color: var(--accent2); }
+  .step-tab.done .step-num { color: var(--green); }
+  .step-tab.done .step-label { color: var(--muted); }
 
-    header {
-      position: relative; z-index: 2;
-      padding: 25px; text-align: center;
-      border-bottom: 1px solid rgba(0, 255, 200, 0.1);
-      letter-spacing: 4px;
-      color: var(--primary);
-      font-weight: bold;
-    }
+  /* FORM SECTIONS */
+  .form-section { display: none; }
+  .form-section.active { display: block; }
 
-    main {
-      position: relative; z-index: 2;
-      max-width: 800px; margin: 0 auto;
-      padding: 60px 20px;
-      display: flex; flex-direction: column; align-items: center;
-    }
+  .section-header { margin-bottom: 2.5rem; }
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent);
+    margin-bottom: 0.7rem;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-num::before { content: ''; display: block; width: 20px; height: 1px; background: var(--accent); }
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    font-weight: 700; line-height: 1.2;
+  }
+  .section-desc { font-size: 0.88rem; color: var(--muted); margin-top: 0.6rem; max-width: 520px; }
 
-    .hero h1 {
-      font-size: clamp(32px, 7vw, 56px);
-      text-align: center;
-      background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 20px;
-    }
+  /* FORM FIELDS */
+  .field-group { display: flex; flex-direction: column; gap: 1.6rem; }
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media(max-width: 600px) { .field-row { grid-template-columns: 1fr; } }
 
-    .tagline {
-      text-align: center;
-      color: rgba(230, 241, 255, 0.6);
-      margin-bottom: 40px;
-      max-width: 500px;
-    }
+  label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.66rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  label .req { color: var(--accent); margin-left: 3px; }
+  label .hint { color: var(--muted2); font-size: 0.6rem; text-transform: none; letter-spacing: 0; margin-left: 6px; font-family: 'DM Sans', sans-serif; font-style: italic; }
 
-    /* Moduły Systemu */
-    .features {
-      background: rgba(0, 255, 200, 0.05);
-      border: 1px solid rgba(0, 255, 200, 0.2);
-      border-radius: 4px;
-      padding: 30px; margin-bottom: 40px;
-      width: 100%;
-    }
+  input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="url"], select, textarea {
+    background: var(--bg2);
+    border: 0.5px solid var(--border2);
+    border-radius: 2px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 300;
+    padding: 0.75rem 1rem;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    width: 100%;
+  }
+  input::placeholder, textarea::placeholder { color: var(--muted2); }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    background: var(--bg3);
+  }
+  select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888580' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
 
-    .feature-item {
-      display: flex; align-items: flex-start;
-      margin-bottom: 20px; gap: 15px;
-    }
+  /* RADIO / CHECKBOX GRID */
+  .option-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+  }
+  .option-grid.wide-opts { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+  .opt-item { position: relative; }
+  .opt-item input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .opt-label {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 2px;
+    padding: 0.9rem 1rem;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    font-size: 0.84rem; color: var(--muted);
+    line-height: 1.4;
+  }
+  .opt-label:hover { border-color: var(--border2); background: var(--bg3); }
+  .opt-item input:checked + .opt-label {
+    border-color: var(--accent);
+    background: rgba(200,184,154,0.05);
+    color: var(--text);
+  }
+  .opt-box {
+    width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px;
+    border: 1px solid var(--muted2); border-radius: 1px;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .opt-item input:checked + .opt-label .opt-box {
+    background: var(--accent); border-color: var(--accent);
+  }
+  .opt-box::after {
+    content: ''; display: none;
+    width: 5px; height: 3px;
+    border-left: 1.5px solid var(--bg);
+    border-bottom: 1.5px solid var(--bg);
+    transform: rotate(-45deg) translateY(-1px);
+  }
+  .opt-item input:checked + .opt-label .opt-box::after { display: block; }
 
-    .feature-icon { color: var(--primary); font-weight: bold; }
-    .feature-text strong { color: var(--primary); }
+  /* RADIO */
+  .radio-box {
+    width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px;
+    border: 1px solid var(--muted2); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.2s;
+  }
+  .opt-item input[type="radio"]:checked + .opt-label .radio-box {
+    border-color: var(--accent);
+  }
+  .opt-item input[type="radio"]:checked + .opt-label .radio-box::after {
+    content: ''; display: block;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+  }
 
-    /* CTA Section */
-    .cta-section { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 400px; }
+  /* RATING */
+  .rating-row {
+    display: flex; align-items: center; gap: 16px;
+    padding: 0.8rem 0;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .rating-row:last-child { border-bottom: none; }
+  .rating-label { font-size: 0.85rem; flex: 1; color: var(--text); }
+  .rating-stars { display: flex; gap: 4px; }
+  .star {
+    width: 28px; height: 28px; cursor: pointer;
+    background: var(--bg3); border: 0.5px solid var(--border);
+    border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; color: var(--muted2);
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    font-family: 'DM Mono', monospace;
+  }
+  .star:hover, .star.active {
+    background: rgba(200,184,154,0.1);
+    border-color: var(--accent);
+    color: var(--accent2);
+  }
 
-    .btn {
-      padding: 18px; text-align: center;
-      text-decoration: none; font-weight: bold;
-      text-transform: uppercase; letter-spacing: 2px;
-      border-radius: 2px; transition: 0.3s;
-      cursor: pointer; position: relative;
-    }
+  /* PHOTO UPLOAD */
+  .upload-zone {
+    border: 1px dashed var(--border2);
+    border-radius: 3px;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    background: var(--bg2);
+  }
+  .upload-zone:hover { border-color: var(--accent); background: var(--bg3); }
+  .upload-icon { font-size: 1.5rem; margin-bottom: 0.8rem; opacity: 0.4; }
+  .upload-label { font-size: 0.85rem; color: var(--muted); }
+  .upload-sub { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.08em; color: var(--muted2); margin-top: 0.4rem; text-transform: uppercase; }
+  .upload-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 1rem; }
+  .preview-thumb {
+    width: 70px; height: 70px; border-radius: 2px;
+    border: 0.5px solid var(--border2);
+    overflow: hidden; position: relative;
+    background: var(--bg3);
+  }
+  .preview-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .preview-thumb .rm {
+    position: absolute; top: 2px; right: 2px;
+    width: 16px; height: 16px;
+    background: rgba(0,0,0,0.7);
+    border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.6rem; color: var(--text);
+  }
 
-    .btn-primary {
-      background: var(--primary); color: var(--bg);
-      box-shadow: 0 0 20px rgba(0, 255, 195, 0.2);
-    }
+  /* SCALE SLIDER */
+  .slider-wrap { padding: 0.4rem 0; }
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%; height: 3px;
+    background: var(--bg3);
+    border-radius: 2px; outline: none; border: none;
+    padding: 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent2);
+    cursor: pointer; border: 2px solid var(--bg);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+  .slider-labels {
+    display: flex; justify-content: space-between;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.08em;
+    color: var(--muted2); margin-top: 6px;
+  }
+  .slider-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; color: var(--accent2);
+    text-align: right; margin-top: 4px;
+  }
 
-    .btn-secondary {
-      border: 1px solid rgba(0, 255, 200, 0.4);
-      color: var(--primary); font-size: 14px;
-    }
+  /* SUMMARY CARD */
+  .summary-card {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 3px;
+    padding: 1.6rem;
+    margin-bottom: 1.2rem;
+  }
+  .summary-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  .summary-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 0.4rem 0;
+    border-bottom: 0.5px solid var(--border);
+    font-size: 0.83rem;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-key { color: var(--muted); }
+  .summary-val { color: var(--text); font-weight: 500; font-size: 0.85rem; text-align: right; max-width: 60%; }
 
-    /* Glitch Animation */
-    .glitch-active {
-      animation: glitch 0.3s infinite;
-      background: var(--glitch-color) !important;
-      color: white !important;
-    }
+  /* BUTTONS */
+  .btn-row { display: flex; justify-content: space-between; align-items: center; margin-top: 3rem; padding-top: 2rem; border-top: 0.5px solid var(--border); }
+  .btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem; letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.85rem 2rem;
+    border-radius: 2px;
+    cursor: pointer; border: none;
+    transition: all 0.2s;
+  }
+  .btn-ghost {
+    background: transparent;
+    border: 0.5px solid var(--border2);
+    color: var(--muted);
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 500;
+  }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-submit {
+    background: var(--green);
+    color: #fff; font-weight: 500;
+    padding: 1rem 2.5rem;
+  }
+  .btn-submit:hover { background: #3d8a5e; }
 
-    @keyframes glitch {
-      0% { transform: translate(0); }
-      20% { transform: translate(-3px, 3px); }
-      40% { transform: translate(-3px, -3px); }
-      60% { transform: translate(3px, 3px); }
-      80% { transform: translate(3px, -3px); }
-      100% { transform: translate(0); }
-    }
+  /* CONFIRM */
+  #confirm {
+    text-align: center;
+    padding: 5rem 2rem;
+    display: none;
+  }
+  .confirm-icon { font-size: 3rem; margin-bottom: 1.5rem; }
+  .confirm-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; margin-bottom: 1rem;
+  }
+  .confirm-sub { color: var(--muted); font-size: 0.9rem; max-width: 460px; margin: 0 auto 2rem; }
+  .confirm-id {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.12em;
+    color: var(--accent); border: 0.5px solid var(--border2);
+    display: inline-block; padding: 6px 16px; border-radius: 1px;
+    margin-bottom: 2rem;
+  }
 
-    /* Trust Section */
-    .trust {
-      margin-top: 40px; display: flex; flex-direction: column; gap: 10px;
-      font-size: 12px; color: rgba(230, 241, 255, 0.5); text-align: center;
-    }
+  /* NOTE BOX */
+  .note-box {
+    background: var(--amber-bg);
+    border: 0.5px solid rgba(196,154,60,0.2);
+    border-radius: 2px; padding: 1rem 1.2rem;
+    font-size: 0.82rem; color: var(--muted);
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .note-icon { color: var(--amber); flex-shrink: 0; margin-top: 2px; }
 
-    footer {
-      padding: 40px; text-align: center; font-size: 10px;
-      border-top: 1px solid rgba(0, 255, 200, 0.1);
-      color: rgba(230, 241, 255, 0.3);
-    }
+  /* FOOTER */
+  footer {
+    margin-top: 5rem; padding: 2rem 0;
+    border-top: 0.5px solid var(--border);
+    text-align: center;
+  }
+  .footer-logo { font-family: 'Playfair Display', serif; font-size: 0.85rem; color: var(--muted); }
+  .footer-sub { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted2); margin-top: 0.3rem; }
 
-    footer a { color: var(--primary); text-decoration: none; }
-  </style>
+  /* REVEAL */
+  .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .revealed { opacity: 1; transform: none; }
+
+  @media(max-width: 640px) {
+    .steps-bar { flex-direction: column; }
+    .step-tab { border-right: none; border-bottom: 0.5px solid var(--border); }
+    .step-tab.active { border-bottom: none; border-left: 2px solid var(--accent); }
+    .hero-meta { gap: 1.5rem; }
+  }
+</style>
 </head>
 <body>
 
-  <header>⚡ ALPOCKET SYSTEM</header>
+<nav>
+  <div class="nav-left">
+    <span class="nav-logo">alpocket.cool</span>
+    <span class="nav-project">Projekt 4Matka</span>
+  </div>
+  <span class="nav-badge">Zapytanie ofertowe</span>
+</nav>
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
 
-  <main>
-    <section class="hero">
-      <h1>AI STARTER PACK</h1>
-      <p class="tagline">Twoja baza automatyzacji i logistyki. Gotowe moduły do natychmiastowego wdrożenia.</p>
-    </section>
-
-    <section class="features">
-      <div class="feature-item">
-        <span class="feature-icon">[01]</span>
-        <div class="feature-text"><strong>SprzątApka Core</strong> – Systemy zarządzania operacyjnego.</div>
+<!-- HERO -->
+<section id="hero">
+  <div class="grid-bg"></div>
+  <div class="container hero-inner">
+    <div class="eyebrow">alpocket.cool · System zapytań ofertowych</div>
+    <h1>Wycena &<br><em>Audyt przestrzeni.</em></h1>
+    <p class="hero-desc">Formularz dla wykonawców i audytorów. Zbieramy wszystko naraz — zakres prac, stan obecny ścian, dostępność i referencje. Czas wypełnienia: ~8 minut.</p>
+    <div class="hero-meta">
+      <div class="meta-item">
+        <span class="meta-val">4</span>
+        <span class="meta-key">Kroki</span>
       </div>
-      <div class="feature-item">
-        <span class="feature-icon">[02]</span>
-        <div class="feature-text"><strong>Hub Logistyczny</strong> – Co-packing i fulfillment (Baza: Oleśniki).</div>
+      <div class="meta-item">
+        <span class="meta-val">~8 min</span>
+        <span class="meta-key">Czas wypełnienia</span>
       </div>
-      <div class="feature-item">
-        <span class="feature-icon">[03]</span>
-        <div class="feature-text"><strong>Digital Stationery</strong> – Muzyczne karty pocztowe Premium.</div>
+      <div class="meta-item">
+        <span class="meta-val">48h</span>
+        <span class="meta-key">Czas odpowiedzi</span>
       </div>
-      <div class="feature-item">
-        <span class="feature-icon">[04]</span>
-        <div class="feature-text"><strong>AI Automatyzacje</strong> – Katalogi WhatsApp i systemy promptów.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FORM -->
+<div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
+
+  <!-- STEP TABS -->
+  <div class="steps-bar" id="steps-bar">
+    <div class="step-tab active" data-step="1">
+      <span class="step-num">Krok 01</span>
+      <span class="step-label">Dane wykonawcy</span>
+    </div>
+    <div class="step-tab" data-step="2">
+      <span class="step-num">Krok 02</span>
+      <span class="step-label">Audyt przestrzeni</span>
+    </div>
+    <div class="step-tab" data-step="3">
+      <span class="step-num">Krok 03</span>
+      <span class="step-label">Zakres & wycena</span>
+    </div>
+    <div class="step-tab" data-step="4">
+      <span class="step-num">Krok 04</span>
+      <span class="step-label">Podsumowanie</span>
+    </div>
+  </div>
+
+  <!-- SEKCJA 1: DANE WYKONAWCY -->
+  <div class="form-section active" id="section-1">
+    <div class="section-header reveal">
+      <div class="section-num">01 · Dane wykonawcy</div>
+      <h2>Kim jesteś?</h2>
+      <p class="section-desc">Podstawowe informacje o firmie lub osobie składającej zapytanie.</p>
+    </div>
+    <div class="field-group reveal">
+
+      <div class="field-row">
+        <div class="field">
+          <label>Firma / Nazwa<span class="req">*</span></label>
+          <input type="text" id="f-firma" placeholder="np. Grafika Wnętrz Sp. z o.o.">
+        </div>
+        <div class="field">
+          <label>Osoba kontaktowa<span class="req">*</span></label>
+          <input type="text" id="f-osoba" placeholder="Imię i nazwisko">
+        </div>
       </div>
-    </section>
 
-    <section class="cta-section">
-      <a href="https://wa.me/48690199168?text=INICJACJA_SYSTEMU" class="btn btn-primary" id="systemBtn">
-        🚀 Wejdź do Systemu
-      </a>
-      <a href="mailto:alpockedpro@gmail.com" class="btn btn-secondary">Wyślij zapytanie</a>
-    </section>
+      <div class="field-row">
+        <div class="field">
+          <label>E-mail<span class="req">*</span></label>
+          <input type="email" id="f-email" placeholder="kontakt@firma.pl">
+        </div>
+        <div class="field">
+          <label>Telefon</label>
+          <input type="tel" id="f-tel" placeholder="+48 000 000 000">
+        </div>
+      </div>
 
-    <section class="trust">
-      <div>STATUS: AKTYWNY // LOKALIZACJA: OLEŚNIKI, PL</div>
-      <div>WSPARCIE: WHATSAPP BUSINESS 1-ON-1</div>
-      <div>WERYFIKACJA: FIZYCZNA BAZA LOGISTYCZNA</div>
-    </section>
-  </main>
+      <div class="field">
+        <label>Lokalizacja działalności<span class="req">*</span></label>
+        <select id="f-miasto">
+          <option value="">— Wybierz miasto / region —</option>
+          <option>Warszawa</option>
+          <option>Kraków</option>
+          <option>Wrocław</option>
+          <option>Trójmiasto</option>
+          <option>Poznań</option>
+          <option>Łódź</option>
+          <option>Katowice / Śląsk</option>
+          <option>Inne — cała Polska</option>
+        </select>
+      </div>
 
-  <footer>
-    © 2026 ALPOCKET. ALL RIGHTS RESERVED. | <a href="https://alpocketcool.vercel.app">VIBE HUB</a>
-  </footer>
+      <div class="field">
+        <label>Specjalizacja<span class="req">*</span> <span class="hint">zaznacz wszystkie pasujące</span></label>
+        <div class="option-grid wide-opts">
+          <div class="opt-item"><input type="checkbox" id="sp1" name="spec" value="druk"><label class="opt-label" for="sp1"><span class="opt-box"></span>Druk wielkoformatowy</label></div>
+          <div class="opt-item"><input type="checkbox" id="sp2" name="spec" value="stretch"><label class="opt-label" for="sp2"><span class="opt-box"></span>Stretch systems / sufity</label></div>
+          <div class="opt-item"><input type="checkbox" id="sp3" name="spec" value="montaz"><label class="opt-label" for="sp3"><span class="opt-box"></span>Montaż systemów ściennych</label></div>
+          <div class="opt-item"><input type="checkbox" id="sp4" name="spec" value="grafika"><label class="opt-label" for="sp4"><span class="opt-box"></span>Projekt graficzny / DTP</label></div>
+          <div class="opt-item"><input type="checkbox" id="sp5" name="spec" value="folia"><label class="opt-label" for="sp5"><span class="opt-box"></span>Folia reklamowa / oklejanie</label></div>
+          <div class="opt-item"><input type="checkbox" id="sp6" name="spec" value="led"><label class="opt-label" for="sp6"><span class="opt-box"></span>Systemy LED / backlit</label></div>
+          <div class="opt-item"><input type="checkbox" id="sp7" name="spec" value="arch"><label class="opt-label" for="sp7"><span class="opt-box"></span>Architektura wnętrz</label></div>
+          <div class="opt-item"><input type="checkbox" id="sp8" name="spec" value="inne"><label class="opt-label" for="sp8"><span class="opt-box"></span>Inne</label></div>
+        </div>
+      </div>
 
-  <script>
-    const btn = document.getElementById('systemBtn');
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      this.classList.add('glitch-active');
-      this.innerText = "ŁĄCZENIE...";
-      
-      setTimeout(() => {
-        window.location.href = this.href;
-      }, 800);
+      <div class="field">
+        <label>Doświadczenie w branży</label>
+        <div class="option-grid">
+          <div class="opt-item"><input type="radio" id="exp1" name="exp" value="1-2"><label class="opt-label" for="exp1"><span class="radio-box"></span>1–2 lata</label></div>
+          <div class="opt-item"><input type="radio" id="exp2" name="exp" value="3-5"><label class="opt-label" for="exp2"><span class="radio-box"></span>3–5 lat</label></div>
+          <div class="opt-item"><input type="radio" id="exp3" name="exp" value="5-10"><label class="opt-label" for="exp3"><span class="radio-box"></span>5–10 lat</label></div>
+          <div class="opt-item"><input type="radio" id="exp4" name="exp" value="10+"><label class="opt-label" for="exp4"><span class="radio-box"></span>10+ lat</label></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Link do portfolio / strony <span class="hint">opcjonalnie</span></label>
+        <input type="url" id="f-portfolio" placeholder="https://twoja-firma.pl lub Behance / Instagram">
+      </div>
+
+    </div>
+    <div class="btn-row">
+      <span></span>
+      <button class="btn btn-primary" onclick="goStep(2)">Dalej → Audyt przestrzeni</button>
+    </div>
+  </div>
+
+  <!-- SEKCJA 2: AUDYT PRZESTRZENI -->
+  <div class="form-section" id="section-2">
+    <div class="section-header reveal">
+      <div class="section-num">02 · Audyt przestrzeni</div>
+      <h2>Stan obecny ścian</h2>
+      <p class="section-desc">Opisz przestrzeń, którą mamy wycenić. Im więcej szczegółów — tym dokładniejsza oferta.</p>
+    </div>
+    <div class="field-group reveal">
+
+      <div class="note-box">
+        <span class="note-icon">↗</span>
+        <span>Jeśli dotyczy nowego obiektu bez aktualnej aranżacji — pomiń pytania o stan obecny i opisz docelowe przeznaczenie pomieszczenia.</span>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Typ obiektu<span class="req">*</span></label>
+          <select id="f-typ">
+            <option value="">— Wybierz —</option>
+            <option>Biuro / przestrzeń coworkingowa</option>
+            <option>Klinika / gabinet medyczny</option>
+            <option>Sklep / showroom</option>
+            <option>Restauracja / kawiarnia</option>
+            <option>Galeria / przestrzeń kulturalna</option>
+            <option>Hotel / hostel</option>
+            <option>Szkoła / placówka edukacyjna</option>
+            <option>Warsztat / zakład produkcyjny</option>
+            <option>Przestrzeń eventowa</option>
+            <option>Inne</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Adres / lokalizacja obiektu<span class="req">*</span></label>
+          <input type="text" id="f-adres" placeholder="ul. Przykładowa 1, Warszawa">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Szacowana powierzchnia do realizacji (m²)<span class="req">*</span></label>
+        <div class="slider-wrap">
+          <input type="range" id="f-pow" min="5" max="500" value="50" step="5" oninput="document.getElementById('pow-val').textContent=this.value+' m²'">
+          <div class="slider-labels"><span>5 m²</span><span>500 m²</span></div>
+          <div class="slider-val" id="pow-val">50 m²</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Co aktualnie znajduje się na ścianach? <span class="hint">zaznacz wszystkie</span></label>
+        <div class="option-grid wide-opts">
+          <div class="opt-item"><input type="checkbox" id="sc1" name="sciana" value="farba"><label class="opt-label" for="sc1"><span class="opt-box"></span>Gładź / farba</label></div>
+          <div class="opt-item"><input type="checkbox" id="sc2" name="sciana" value="tapeta"><label class="opt-label" for="sc2"><span class="opt-box"></span>Tapeta</label></div>
+          <div class="opt-item"><input type="checkbox" id="sc3" name="sciana" value="folia"><label class="opt-label" for="sc3"><span class="opt-box"></span>Folia / oklejenie</label></div>
+          <div class="opt-item"><input type="checkbox" id="sc4" name="sciana" value="grafika"><label class="opt-label" for="sc4"><span class="opt-box"></span>Istniejąca grafika</label></div>
+          <div class="opt-item"><input type="checkbox" id="sc5" name="sciana" value="plytki"><label class="opt-label" for="sc5"><span class="opt-box"></span>Płytki / cegła</label></div>
+          <div class="opt-item"><input type="checkbox" id="sc6" name="sciana" value="beton"><label class="opt-label" for="sc6"><span class="opt-box"></span>Beton / surowy tynk</label></div>
+          <div class="opt-item"><input type="checkbox" id="sc7" name="sciana" value="drewno"><label class="opt-label" for="sc7"><span class="opt-box"></span>Drewno / okładzina</label></div>
+          <div class="opt-item"><input type="checkbox" id="sc8" name="sciana" value="puste"><label class="opt-label" for="sc8"><span class="opt-box"></span>Nowy obiekt — brak</label></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Stan techniczny ścian<span class="req">*</span></label>
+        <div class="option-grid">
+          <div class="opt-item"><input type="radio" id="st1" name="stan" value="idealny"><label class="opt-label" for="st1"><span class="radio-box"></span>Idealny — bez napraw</label></div>
+          <div class="opt-item"><input type="radio" id="st2" name="stan" value="dobry"><label class="opt-label" for="st2"><span class="radio-box"></span>Dobry — drobne ubytki</label></div>
+          <div class="opt-item"><input type="radio" id="st3" name="stan" value="wymaga"><label class="opt-label" for="st3"><span class="radio-box"></span>Wymaga przygotowania</label></div>
+          <div class="opt-item"><input type="radio" id="st4" name="stan" value="nieznany"><label class="opt-label" for="st4"><span class="radio-box"></span>Nieznany / do oceny</label></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Zdjęcia przestrzeni <span class="hint">opcjonalnie, maks. 5 plików</span></label>
+        <div class="upload-zone" onclick="document.getElementById('f-zdjecia').click()">
+          <div class="upload-icon">📎</div>
+          <div class="upload-label">Przeciągnij zdjęcia lub kliknij, aby wybrać</div>
+          <div class="upload-sub">JPG, PNG, HEIF · maks. 10 MB każde</div>
+        </div>
+        <input type="file" id="f-zdjecia" multiple accept="image/*" style="display:none" onchange="handlePhotos(this)">
+        <div class="upload-preview" id="photo-preview"></div>
+      </div>
+
+      <div class="field">
+        <label>Uwagi do przestrzeni <span class="hint">np. trudny dostęp, specyficzne wymiary, przeszkody</span></label>
+        <textarea id="f-uwagi-pom" placeholder="Opisz wszelkie czynniki mogące wpłynąć na wycenę lub montaż..."></textarea>
+      </div>
+
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goStep(1)">← Wstecz</button>
+      <button class="btn btn-primary" onclick="goStep(3)">Dalej → Zakres i wycena</button>
+    </div>
+  </div>
+
+  <!-- SEKCJA 3: ZAKRES I WYCENA -->
+  <div class="form-section" id="section-3">
+    <div class="section-header reveal">
+      <div class="section-num">03 · Zakres & wycena</div>
+      <h2>Co oferujesz?</h2>
+      <p class="section-desc">Określ czym możesz się zająć, szacowane koszty i dostępność.</p>
+    </div>
+    <div class="field-group reveal">
+
+      <div class="field">
+        <label>Zakres usług w tej realizacji<span class="req">*</span> <span class="hint">zaznacz co wyceniasz</span></label>
+        <div class="option-grid wide-opts">
+          <div class="opt-item"><input type="checkbox" id="us1" name="usluga" value="projekt"><label class="opt-label" for="us1"><span class="opt-box"></span>Projekt graficzny</label></div>
+          <div class="opt-item"><input type="checkbox" id="us2" name="usluga" value="przygotowanie"><label class="opt-label" for="us2"><span class="opt-box"></span>Przygotowanie ścian</label></div>
+          <div class="opt-item"><input type="checkbox" id="us3" name="usluga" value="druk"><label class="opt-label" for="us3"><span class="opt-box"></span>Druk wielkoformatowy</label></div>
+          <div class="opt-item"><input type="checkbox" id="us4" name="usluga" value="montaz"><label class="opt-label" for="us4"><span class="opt-box"></span>Montaż systemu</label></div>
+          <div class="opt-item"><input type="checkbox" id="us5" name="usluga" value="demontaz"><label class="opt-label" for="us5"><span class="opt-box"></span>Demontaż istniejącego</label></div>
+          <div class="opt-item"><input type="checkbox" id="us6" name="usluga" value="led"><label class="opt-label" for="us6"><span class="opt-box"></span>Instalacja LED</label></div>
+          <div class="opt-item"><input type="checkbox" id="us7" name="usluga" value="nadzor"><label class="opt-label" for="us7"><span class="opt-box"></span>Nadzór realizacji</label></div>
+          <div class="opt-item"><input type="checkbox" id="us8" name="usluga" value="kompleksowo"><label class="opt-label" for="us8"><span class="opt-box"></span>Kompleksowo — wszystko</label></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Preferowany system realizacji</label>
+        <div class="option-grid wide-opts">
+          <div class="opt-item"><input type="radio" id="sys1" name="system" value="canvas"><label class="opt-label" for="sys1"><span class="radio-box"></span>Canvas na ramie alu</label></div>
+          <div class="opt-item"><input type="radio" id="sys2" name="system" value="stretch"><label class="opt-label" for="sys2"><span class="radio-box"></span>Stretch fabric system</label></div>
+          <div class="opt-item"><input type="radio" id="sys3" name="system" value="backlit"><label class="opt-label" for="sys3"><span class="radio-box"></span>PVC backlit + LED</label></div>
+          <div class="opt-item"><input type="radio" id="sys4" name="system" value="tapeta"><label class="opt-label" for="sys4"><span class="radio-box"></span>Tapeta wielkoformatowa</label></div>
+          <div class="opt-item"><input type="radio" id="sys5" name="system" value="bezposredni"><label class="opt-label" for="sys5"><span class="radio-box"></span>Druk bezpośredni</label></div>
+          <div class="opt-item"><input type="radio" id="sys6" name="system" value="propozycja"><label class="opt-label" for="sys6"><span class="radio-box"></span>Zaproponuję optymalne</label></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Szacowany koszt netto (PLN) <span class="hint">orientacyjnie za całość</span></label>
+        <div class="slider-wrap">
+          <input type="range" id="f-koszt" min="0" max="100000" value="10000" step="500" oninput="updateKoszt(this.value)">
+          <div class="slider-labels"><span>0 PLN</span><span>100 000+ PLN</span></div>
+          <div class="slider-val" id="koszt-val">10 000 PLN</div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Czas realizacji (dni robocze)<span class="req">*</span></label>
+          <select id="f-czas">
+            <option value="">— Wybierz —</option>
+            <option>1–3 dni</option>
+            <option>4–7 dni</option>
+            <option>1–2 tygodnie</option>
+            <option>2–4 tygodnie</option>
+            <option>Ponad miesiąc</option>
+            <option>Zależy od zakresu</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Dostępność<span class="req">*</span></label>
+          <select id="f-dostepnosc">
+            <option value="">— Wybierz —</option>
+            <option>Natychmiast</option>
+            <option>W ciągu 2 tygodni</option>
+            <option>W ciągu miesiąca</option>
+            <option>Za 1–3 miesiące</option>
+            <option>Termin do uzgodnienia</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Ocena własnych kompetencji<span class="hint"> oceń każdy obszar</span></label>
+        <div id="ratings">
+          <div class="rating-row"><span class="rating-label">Jakość druku</span><div class="rating-stars" data-key="druk"></div></div>
+          <div class="rating-row"><span class="rating-label">Szybkość realizacji</span><div class="rating-stars" data-key="speed"></div></div>
+          <div class="rating-row"><span class="rating-label">Doświadczenie w obiektach premium</span><div class="rating-stars" data-key="premium"></div></div>
+          <div class="rating-row"><span class="rating-label">Komunikacja z klientem</span><div class="rating-stars" data-key="comm"></div></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Referencje / poprzednie realizacje <span class="hint">opcjonalnie</span></label>
+        <textarea id="f-referencje" placeholder="Opisz 1–2 podobne realizacje lub wklej linki do zdjęć / portfolio..."></textarea>
+      </div>
+
+      <div class="field">
+        <label>Dodatkowe uwagi do wyceny</label>
+        <textarea id="f-uwagi-wycena" placeholder="Co jeszcze powinieneś wiedzieć? Warunki płatności, minimalna wartość zlecenia, wymagania sprzętowe..."></textarea>
+      </div>
+
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goStep(2)">← Wstecz</button>
+      <button class="btn btn-primary" onclick="goStep(4)">Dalej → Podsumowanie</button>
+    </div>
+  </div>
+
+  <!-- SEKCJA 4: PODSUMOWANIE -->
+  <div class="form-section" id="section-4">
+    <div class="section-header reveal">
+      <div class="section-num">04 · Podsumowanie</div>
+      <h2>Sprawdź i wyślij</h2>
+      <p class="section-desc">Przejrzyj swoje odpowiedzi przed wysłaniem zapytania.</p>
+    </div>
+    <div id="summary-content" class="reveal"></div>
+
+    <div class="note-box reveal" style="margin-top: 1.5rem;">
+      <span class="note-icon">↗</span>
+      <span>Po wysłaniu formularza odezwiemy się w ciągu <strong>48 godzin roboczych</strong>. Zapytanie trafia bezpośrednio do alpocket.cool. Dane traktujemy poufnie.</span>
+    </div>
+
+    <div class="btn-row reveal">
+      <button class="btn btn-ghost" onclick="goStep(3)">← Wstecz</button>
+      <button class="btn btn-submit" onclick="submitForm()">Wyślij zapytanie ✓</button>
+    </div>
+  </div>
+
+  <!-- POTWIERDZENIE -->
+  <div id="confirm">
+    <div class="confirm-icon">✦</div>
+    <h2 class="confirm-title" style="font-family:'Playfair Display',serif;">Zapytanie wysłane.</h2>
+    <p class="confirm-sub">Dziękujemy za przesłanie szczegółów. Nasz zespół zapozna się z ofertą i wróci do Ciebie w ciągu 48 godzin roboczych.</p>
+    <div class="confirm-id" id="confirm-id"></div>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem;">Zapisz numer referencyjny — może być potrzebny w korespondencji.</p>
+    <button class="btn btn-ghost" onclick="resetForm()">Złóż kolejne zapytanie</button>
+  </div>
+
+</div>
+
+<footer>
+  <div class="container">
+    <div class="footer-logo">alpocket.cool</div>
+    <div class="footer-sub">4Matka · System zapytań · 2025</div>
+  </div>
+</footer>
+
+<script>
+let currentStep = 1;
+const ratings = {};
+
+function goStep(n) {
+  if (n > currentStep && !validateStep(currentStep)) return;
+  document.getElementById('section-' + currentStep).classList.remove('active');
+  document.getElementById('section-' + n).classList.add('active');
+
+  document.querySelectorAll('.step-tab').forEach(t => {
+    const s = parseInt(t.dataset.step);
+    t.classList.remove('active', 'done');
+    if (s === n) t.classList.add('active');
+    if (s < n) t.classList.add('done');
+  });
+
+  currentStep = n;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  updateProgress();
+
+  if (n === 4) buildSummary();
+
+  document.querySelectorAll('#section-' + n + ' .reveal').forEach(el => {
+    setTimeout(() => el.classList.add('revealed'), 80);
+  });
+}
+
+function updateProgress() {
+  document.getElementById('progress').style.width = ((currentStep - 1) / 3 * 100) + '%';
+}
+
+function validateStep(step) {
+  const required = {
+    1: ['f-firma', 'f-osoba', 'f-email', 'f-miasto'],
+    2: ['f-typ', 'f-adres'],
+    3: ['f-czas', 'f-dostepnosc']
+  };
+  const fields = required[step] || [];
+  let ok = true;
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el || !el.value.trim()) {
+      el && (el.style.borderColor = 'var(--red)');
+      ok = false;
+    } else {
+      el.style.borderColor = '';
+    }
+  });
+  if (!ok) {
+    const first = document.getElementById(fields.find(id => !document.getElementById(id)?.value.trim()));
+    first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  return ok;
+}
+
+function handlePhotos(input) {
+  const preview = document.getElementById('photo-preview');
+  const files = Array.from(input.files).slice(0, 5);
+  preview.innerHTML = '';
+  files.forEach((file, i) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const div = document.createElement('div');
+      div.className = 'preview-thumb';
+      div.innerHTML = '<img src="' + e.target.result + '"><div class="rm" onclick="this.parentNode.remove()">✕</div>';
+      preview.appendChild(div);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function updateKoszt(val) {
+  const v = parseInt(val);
+  document.getElementById('koszt-val').textContent = v >= 100000 ? '100 000+ PLN' : v.toLocaleString('pl-PL') + ' PLN';
+}
+
+// RATING STARS
+document.querySelectorAll('.rating-stars').forEach(wrap => {
+  const key = wrap.dataset.key;
+  ratings[key] = 0;
+  for (let i = 1; i <= 5; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.textContent = i;
+    star.dataset.val = i;
+    star.addEventListener('click', () => {
+      ratings[key] = i;
+      wrap.querySelectorAll('.star').forEach(s => {
+        s.classList.toggle('active', parseInt(s.dataset.val) <= i);
+      });
     });
-  </script>
+    wrap.appendChild(star);
+  }
+});
 
+function getChecked(name) {
+  return Array.from(document.querySelectorAll('input[name="' + name + '"]:checked')).map(el => el.value).join(', ') || '—';
+}
+function getRadio(name) {
+  const el = document.querySelector('input[name="' + name + '"]:checked');
+  return el ? el.closest('.opt-item').querySelector('.opt-label').textContent.trim() : '—';
+}
+function getVal(id) {
+  const el = document.getElementById(id);
+  return el ? (el.value.trim() || '—') : '—';
+}
+
+function buildSummary() {
+  const pow = document.getElementById('f-pow')?.value || '50';
+  const koszt = document.getElementById('koszt-val')?.textContent || '—';
+  const ratingStr = Object.entries(ratings).map(([k, v]) => k + ': ' + '★'.repeat(v) + '☆'.repeat(5 - v)).join(' · ') || '—';
+
+  const sections = [
+    { title: 'Dane wykonawcy', rows: [
+      ['Firma', getVal('f-firma')],
+      ['Osoba', getVal('f-osoba')],
+      ['E-mail', getVal('f-email')],
+      ['Telefon', getVal('f-tel')],
+      ['Miasto', getVal('f-miasto')],
+      ['Specjalizacja', getChecked('spec')],
+      ['Doświadczenie', getRadio('exp')],
+    ]},
+    { title: 'Audyt przestrzeni', rows: [
+      ['Typ obiektu', getVal('f-typ')],
+      ['Adres', getVal('f-adres')],
+      ['Powierzchnia', pow + ' m²'],
+      ['Stan ścian', getRadio('stan')],
+      ['Obecne na ścianach', getChecked('sciana')],
+    ]},
+    { title: 'Zakres & wycena', rows: [
+      ['Zakres usług', getChecked('usluga')],
+      ['System', getRadio('system')],
+      ['Szacowany koszt', koszt],
+      ['Czas realizacji', getVal('f-czas')],
+      ['Dostępność', getVal('f-dostepnosc')],
+      ['Oceny', ratingStr],
+    ]},
+  ];
+
+  const html = sections.map(s => `
+    <div class="summary-card">
+      <div class="summary-title">${s.title}</div>
+      ${s.rows.map(([k, v]) => `<div class="summary-row"><span class="summary-key">${k}</span><span class="summary-val">${v}</span></div>`).join('')}
+    </div>
+  `).join('');
+
+  document.getElementById('summary-content').innerHTML = html;
+}
+
+function submitForm() {
+  document.querySelector('.container').style.display = 'none';
+  const cf = document.getElementById('confirm');
+  cf.style.display = 'block';
+  const id = '4M-' + Date.now().toString(36).toUpperCase();
+  document.getElementById('confirm-id').textContent = 'REF: ' + id;
+  document.getElementById('progress').style.width = '100%';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function resetForm() {
+  document.getElementById('confirm').style.display = 'none';
+  document.querySelector('.container').style.display = 'block';
+  goStep(1);
+  document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="url"], textarea, select').forEach(el => el.value = '');
+  document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(el => el.checked = false);
+  document.querySelectorAll('.opt-label').forEach(l => l.style.borderColor = '');
+  document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+  Object.keys(ratings).forEach(k => ratings[k] = 0);
+  document.getElementById('f-pow').value = 50;
+  document.getElementById('pow-val').textContent = '50 m²';
+  document.getElementById('f-koszt').value = 10000;
+  document.getElementById('koszt-val').textContent = '10 000 PLN';
+  document.getElementById('photo-preview').innerHTML = '';
+}
+
+// Init reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('revealed'); obs.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
 </body>
 </html>

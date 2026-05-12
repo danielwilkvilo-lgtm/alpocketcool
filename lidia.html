@@ -1,87 +1,251 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Lidia</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lidia — Private Cultural Connection</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 
   <style>
-    body {
+    * {
       margin: 0;
-      background: #f6f1e7;
-      color: #1c1c1c;
-      font-family: 'Inter', sans-serif;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    .wrap {
+    body {
+      background: #f6f1e7;
+      color: #1d1d1d;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .hero {
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       text-align: center;
-      padding: 40px;
+      padding: 40px 24px;
+    }
+
+    .location {
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      font-size: 12px;
+      opacity: 0.6;
+      margin-bottom: 20px;
     }
 
     h1 {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 80px;
-      margin: 0;
+      font-size: clamp(72px, 12vw, 150px);
       font-weight: 500;
+      line-height: 0.9;
+      margin-bottom: 24px;
     }
 
-    p {
-      max-width: 600px;
-      font-size: 18px;
-      opacity: 0.75;
-      line-height: 1.6;
+    .subtitle {
+      max-width: 700px;
+      font-size: clamp(20px, 3vw, 36px);
+      font-weight: 300;
+      line-height: 1.5;
+      opacity: 0.9;
+      margin-bottom: 50px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     .btn {
-      margin-top: 35px;
-      padding: 14px 28px;
-      border: 1px solid #000;
+      padding: 16px 34px;
       border-radius: 999px;
       text-decoration: none;
-      color: #000;
-      transition: 0.3s;
+      transition: 0.3s ease;
+      font-size: 14px;
+      letter-spacing: 1px;
     }
 
-    .btn:hover {
-      background: #000;
-      color: #fff;
+    .btn-primary {
+      background: #1d1d1d;
+      color: white;
     }
 
-    .meta {
-      margin-top: 40px;
+    .btn-primary:hover {
+      opacity: 0.85;
+    }
+
+    .btn-secondary {
+      border: 1px solid #1d1d1d;
+      color: #1d1d1d;
+    }
+
+    .btn-secondary:hover {
+      background: #1d1d1d;
+      color: white;
+    }
+
+    .quote {
+      padding: 140px 24px;
+      text-align: center;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .quote p {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(34px, 5vw, 72px);
+      line-height: 1.2;
+      font-weight: 400;
+    }
+
+    .story {
+      max-width: 900px;
+      margin: auto;
+      padding: 0 24px 140px;
+      text-align: center;
+    }
+
+    .story h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 52px;
+      margin-bottom: 30px;
+      font-weight: 500;
+    }
+
+    .story p {
+      font-size: 18px;
+      line-height: 1.9;
+      opacity: 0.8;
+      margin-bottom: 24px;
+    }
+
+    .matrix-box {
+      max-width: 900px;
+      margin: 0 auto 140px;
+      background: rgba(255,255,255,0.5);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 30px;
+      padding: 60px 30px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .matrix-box h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 46px;
+      margin-bottom: 24px;
+      font-weight: 500;
+    }
+
+    .matrix-box p {
+      max-width: 650px;
+      margin: auto;
+      line-height: 1.8;
+      opacity: 0.75;
+      margin-bottom: 36px;
+    }
+
+    .footer {
+      padding: 60px 20px;
+      text-align: center;
       font-size: 12px;
       opacity: 0.5;
+      letter-spacing: 2px;
+    }
+
+    @media (max-width: 768px) {
+      .hero {
+        padding-top: 100px;
+      }
+
+      .buttons {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .quote {
+        padding: 100px 24px;
+      }
     }
   </style>
 </head>
-
 <body>
 
-  <div class="wrap">
+  <section class="hero">
+    <div class="location">Bolzano / South Tyrol</div>
 
     <h1>Lidia</h1>
 
-    <p>
-      A private cultural connection between mountains, silence and coastal Italy.  
-      Not a service — a conversation.
+    <p class="subtitle">
+      A private cultural connection between mountains, silence and coastal Italy.
     </p>
 
-    <a class="btn" href="https://matrix.to/#/#lidia-access:matrix.org">
-      Enter Private Channel
-    </a>
+    <div class="buttons">
+      <a class="btn btn-primary" href="https://matrix.to/#/#lidia-access:matrix.org">
+        Enter Private Channel
+      </a>
 
-    <div class="meta">
-      Bolzano / South Tyrol • Quiet Luxury • Human Connection
+      <a class="btn btn-secondary" href="#story">
+        Explore Philosophy
+      </a>
     </div>
+  </section>
 
-  </div>
+  <section class="quote">
+    <p>
+      “Some journeys begin quietly.”
+    </p>
+  </section>
+
+  <section class="story" id="story">
+    <h2>Not tourism. Connection.</h2>
+
+    <p>
+      This is not a traditional booking platform.
+      It is a private communication space designed around atmosphere,
+      cultural rhythm and human connection.
+    </p>
+
+    <p>
+      From Alpine stillness to coastal conversations,
+      Lidia creates experiences that feel personal,
+      discreet and emotionally memorable.
+    </p>
+
+    <p>
+      Less like a service.
+      More like access.
+    </p>
+  </section>
+
+  <section class="matrix-box">
+    <h3>Lidia Private Channel</h3>
+
+    <p>
+      A quiet and private Matrix conversation space for cultural experiences,
+      emotional travel planning and long-term connection.
+    </p>
+
+    <a class="btn btn-primary" href="https://matrix.to/#/#lidia-access:matrix.org">
+      Open Matrix Channel
+    </a>
+  </section>
+
+  <footer class="footer">
+    LIDIA • PRIVATE CULTURAL ACCESS • 2026
+  </footer>
 
 </body>
 </html>
